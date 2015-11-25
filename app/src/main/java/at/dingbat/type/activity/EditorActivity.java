@@ -38,6 +38,7 @@ public class EditorActivity extends AppCompatActivity {
         final Toolbar toolbar = (Toolbar) findViewById(R.id.activity_editor_toolbar);
         setSupportActionBar(toolbar);
 
+
         toolbar_title = (EditText) findViewById(R.id.activity_editor_toolbar_title);
 
         if(editable) getSupportActionBar().setTitle("");
