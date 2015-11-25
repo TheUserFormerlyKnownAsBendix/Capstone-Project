@@ -1,10 +1,7 @@
 package at.dingbat.type.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
-import android.view.Gravity;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -14,21 +11,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.drive.Metadata;
-import com.google.android.gms.drive.metadata.MetadataField;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import at.dingbat.type.BuildConfig;
 import at.dingbat.type.R;
-import at.dingbat.type.activity.EditorActivity;
 import at.dingbat.type.adapter.Adapter;
 
 /**
  * Created by Max on 11/21/2015.
  */
-public class FileListItem extends RelativeLayout {
+public class FolderListItem extends RelativeLayout {
 
     private DataHolder holder;
 
@@ -37,21 +30,19 @@ public class FileListItem extends RelativeLayout {
     private TextView modified;
     private ImageButton more;
 
-    public FileListItem(final Context context) {
+    public FolderListItem(final Context context) {
         super(context);
 
-        inflate(context, R.layout.widget_file_list_item, this);
+        inflate(context, R.layout.widget_folder_list_item, this);
 
-        root = (LinearLayout) findViewById(R.id.widget_file_list_item_root);
-        title = (TextView) findViewById(R.id.widget_file_list_item_title);
-        modified = (TextView) findViewById(R.id.widget_file_list_item_modified);
-        more = (ImageButton) findViewById(R.id.widget_file_list_item_more);
+        root = (LinearLayout) findViewById(R.id.widget_folder_list_item_root);
+        title = (TextView) findViewById(R.id.widget_folder_list_item_title);
+        more = (ImageButton) findViewById(R.id.widget_folder_list_item_more);
 
         root.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(context, EditorActivity.class);
-                context.startActivity(i);
+
             }
         });
 
@@ -75,34 +66,6 @@ public class FileListItem extends RelativeLayout {
     public void setDataHolder(DataHolder holder) {
         this.holder = holder;
         title.setText(holder.file.getTitle());
-
-        Date date = new Date();
-        long diff = date.getTime() - holder.file.getModifiedDate().getTime();
-        // Less than one minute ago
-        if(diff < (1000*60)) {
-            modified.setText("Now");
-        }
-        // Less than an hour ago
-        else if(diff < (1000*60*60)) {
-            modified.setText(Math.round(diff/(1000*60))+" minutes ago");
-        }
-        // Less than two hours ago
-        else if(diff < (1000*60*60*2)) {
-            modified.setText("1 hour ago");
-        }
-        // Less than a day ago
-        else if(diff < (1000*60*60*24)) {
-            modified.setText(Math.round(diff / (1000 * 60 * 60)) + " hours ago");
-        }
-        // Less than two days ago
-        else if(diff < (1000*60*60*24*2)) {
-            modified.setText("Yesterday");
-        }
-        // More than two days ago - show date
-        else {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyy/MM/dd");
-            modified.setText(sdf.format(holder.file.getModifiedDate()));
-        }
     }
 
     public static class DataHolder extends Adapter.DataHolder {

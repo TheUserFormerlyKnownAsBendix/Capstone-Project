@@ -47,10 +47,11 @@
     </LinearLayout>
 
     <ImageButton
+        android:id="@+id/widget_file_list_item_more"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="center_vertical"
-        android:src="@drawable/ic_info_black_24dp"
+        android:src="@drawable/ic_more_vert_black_24dp"
         android:scaleType="center"
         android:background="?attr/selectableItemBackgroundBorderless"/>
 
