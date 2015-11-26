@@ -98,10 +98,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         holders.clear();
         for(Section s: sections) {
             holders.addAll(s.getHolders());
-            Log.d("test", s.title);
-        }
-        for(DataHolder holder: holders) {
-            Log.d("test", holder.toString());
         }
         this.notifyDataSetChanged();
     }

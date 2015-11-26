@@ -8,6 +8,7 @@
     <dimen name="drawer_width">300dp</dimen>
 
     <dimen name="list_item_height">64dp</dimen>
+    <dimen name="list_item_primary_control_width">56dp</dimen>
     <dimen name="list_item_primary_control_size">40dp</dimen>
     <dimen name="list_item_primary_control_radius">20dp</dimen>
     <dimen name="list_item_primary_control_image">24dp</dimen>

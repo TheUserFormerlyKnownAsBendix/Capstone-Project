@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
+import at.dingbat.type.widget.Editable;
 import at.dingbat.type.widget.TextBlockItem;
 
 /**
@@ -34,6 +35,7 @@ public class EditorAdapter extends RecyclerView.Adapter<EditorAdapter.ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         View v = holder.view;
         if(v instanceof TextBlockItem) ((TextBlockItem) v).setDataHolder((TextBlockItem.DataHolder) holders.get(position));
+        ((Editable)v).setEditable(isEditable);
     }
 
     @Override

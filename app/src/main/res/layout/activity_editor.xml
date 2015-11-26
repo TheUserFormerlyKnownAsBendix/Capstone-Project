@@ -29,17 +29,6 @@
                 android:background="?attr/colorPrimary"
                 android:clipToPadding="false"></RelativeLayout>
 
-            <EditText
-                android:id="@+id/activity_editor_toolbar_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Untitled"
-                android:background="@android:color/transparent"
-                android:textSize="34sp"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="24dp"
-                android:layout_marginLeft="72dp"/>
-
             <android.support.v7.widget.Toolbar
                 android:id="@+id/activity_editor_toolbar"
                 android:layout_width="match_parent"

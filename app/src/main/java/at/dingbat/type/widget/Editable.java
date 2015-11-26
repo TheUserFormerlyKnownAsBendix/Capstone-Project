@@ -6,4 +6,5 @@ package at.dingbat.type.widget;
 public interface Editable {
     public void onEnterEditMode();
     public void onExitEditMode();
+    public void setEditable(boolean editable);
 }
