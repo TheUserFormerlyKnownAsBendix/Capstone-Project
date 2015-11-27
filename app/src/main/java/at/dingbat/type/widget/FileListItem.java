@@ -51,6 +51,7 @@ public class FileListItem extends RelativeLayout {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(context, EditorActivity.class);
+                i.putExtra("file", holder.file.getDriveId().encodeToString());
                 context.startActivity(i);
             }
         });

@@ -1,4 +1,4 @@
-package at.dingbat.type.editor;
+package at.dingbat.type.model;
 
 /**
  * Created by Max on 11/25/2015.

@@ -10,12 +10,15 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.MetadataChangeSet;
 
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
@@ -102,6 +105,25 @@ public class ApiUtil {
         });
     }
 
+    public static void readFile(final GoogleApiClient client, DriveFile file, final FileReadCallback callback) {
+        file.open(client, DriveFile.MODE_READ_ONLY, null).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+            @Override
+            public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+                DriveContents contents = driveContentsResult.getDriveContents();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(contents.getInputStream()));
+                final StringBuilder builder = new StringBuilder();
+                String line;
+                try {
+                    while((line = reader.readLine()) != null) {
+                        builder.append(line);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
 
     public static interface LoginCallback {
         void onLoggedIn(GoogleSignInResult result);
@@ -117,6 +139,10 @@ public class ApiUtil {
 
     public static interface FileCreatedCallback {
         void onFileCreated(DriveFile file);
+    }
+
+    public static interface FileReadCallback {
+        void onFileRead(String content);
     }
 
 }

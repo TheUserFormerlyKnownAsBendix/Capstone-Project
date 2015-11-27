@@ -50,7 +50,8 @@
         android:layout_marginLeft="@dimen/content_margin"
         android:layout_marginRight="@dimen/content_margin"
         android:layout_marginTop="@dimen/content_margin_top"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fitsSystemWindows="true">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/activity_editor_recycler"
