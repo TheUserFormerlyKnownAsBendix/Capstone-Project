@@ -1,19 +1,15 @@
 package at.dingbat.type.model;
 
-import android.util.Log;
-
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Iterator;
 
 import at.dingbat.type.adapter.Adapter;
 import at.dingbat.type.util.ApiUtil;
@@ -29,13 +25,15 @@ public class Document {
 
     private double version;
     private ArrayList<LatLng> locations;
-    private Map<String, TextStyle> master;
+    private ArrayList<TextStyle> master;
     private ArrayList<TextBlock> blocks;
+
+    private DocumentLoadedCallback documentLoaded;
 
     public Document(GoogleApiClient client) {
         this.client = client;
         this.locations = new ArrayList<>();
-        this.master = new HashMap<>();
+        this.master = new ArrayList<>();
         this.blocks = new ArrayList<>();
     }
 
@@ -46,7 +44,41 @@ public class Document {
     public void parseJSON(String content) {
         try {
             JSONObject document = new JSONObject(content);
-            Log.d("test", "object");
+            this.version = Double.parseDouble(document.getJSONObject("typo").getString("version"));
+            if(this.version == 1) {
+                if(document.has("locations")) {
+                    JSONArray loc = document.getJSONArray("locations");
+                    for (int i = 0; i < loc.length(); i++) {
+                        LatLng latlng = new LatLng(loc.getJSONObject(i).getDouble("lat"), loc.getJSONObject(i).getDouble("lng"));
+                        this.locations.add(latlng);
+                    }
+                }
+                if(document.has("master")) {
+                    JSONObject styles = document.getJSONObject("master");
+                    Iterator<?> keys = styles.keys();
+                    while (keys.hasNext()) {
+                        String key = (String) keys.next();
+                        try {
+                            TextStyle style = TextStyle.parseJSON(key, styles.getJSONObject(key));
+                            this.master.add(style);
+                        } catch (JSONException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+                if(document.has("root")) {
+                    JSONArray root = document.getJSONArray("root");
+                    for (int i = 0; i < root.length(); i++) {
+                        try {
+                            JSONObject obj = root.getJSONObject(i);
+                            blocks.add(TextBlock.parseJSON(obj, master));
+                        } catch (JSONException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+            if(documentLoaded != null) documentLoaded.onDocumentLoaded();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -61,23 +93,28 @@ public class Document {
         });
     }
 
+    public void setOnDocumentLoadedListener(DocumentLoadedCallback callback) {
+        this.documentLoaded = callback;
+    }
+
     public void save() {
 
     }
 
-    public void getHolders() {
-
+    public ArrayList<Adapter.DataHolder> getHolders() {
+        ArrayList<Adapter.DataHolder> holders = new ArrayList<>();
+        for(TextBlock block: blocks) {
+            holders.add(TextBlockItem.DataHolder.create(block));
+        }
+        return holders;
     }
 
-    public static class TextBlock {
-        public static String TYPE_TITLE = "title";
-        public static String TYPE_SUBTITLE = "subtitle";
-        public static String TYPE_PARAGRAPH = "paragraph";
-        public static String TYPE_IMAGE = "image";
+    public ArrayList<TextStyle> getMaster() {
+        return master;
+    }
 
-        public String UUID;
-        public TextStyle style;
-        public String content;
+    public static interface DocumentLoadedCallback {
+        void onDocumentLoaded();
     }
 
 }

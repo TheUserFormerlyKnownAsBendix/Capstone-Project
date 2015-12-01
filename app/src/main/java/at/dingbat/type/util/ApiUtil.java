@@ -114,18 +114,20 @@ public class ApiUtil {
                 final StringBuilder builder = new StringBuilder();
                 String line;
                 try {
-                    while((line = reader.readLine()) != null) {
+                    while ((line = reader.readLine()) != null) {
                         builder.append(line);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    callback.onFileRead(builder.toString());
                 }
             }
         });
     }
 
 
-    public static interface LoginCallback {
+        public static interface LoginCallback {
         void onLoggedIn(GoogleSignInResult result);
     }
 

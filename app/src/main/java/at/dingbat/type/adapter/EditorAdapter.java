@@ -55,6 +55,13 @@ public class EditorAdapter extends RecyclerView.Adapter<EditorAdapter.ViewHolder
         this.notifyItemInserted(this.holders.size()-1);
     }
 
+    public void add(ArrayList<Adapter.DataHolder> holders) {
+        int start = this.holders.size()-1;
+        int end = start+holders.size();
+        this.holders.addAll(holders);
+        notifyItemRangeInserted(start, end);
+    }
+
     public void editable(boolean isEditable) {
         this.isEditable = isEditable;
     }

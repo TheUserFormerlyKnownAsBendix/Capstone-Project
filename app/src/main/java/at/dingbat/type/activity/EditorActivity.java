@@ -1,9 +1,13 @@
 package at.dingbat.type.activity;
 
+import android.animation.ValueAnimator;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
@@ -14,6 +18,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.LinearLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -26,6 +32,7 @@ import at.dingbat.type.R;
 import at.dingbat.type.adapter.EditorAdapter;
 import at.dingbat.type.model.Document;
 import at.dingbat.type.model.TextStyle;
+import at.dingbat.type.util.DialogUtil;
 import at.dingbat.type.widget.TextBlockItem;
 
 public class EditorActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -55,42 +62,9 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
         fab_add = (FloatingActionButton) findViewById(R.id.activity_editor_add);
 
-        fab_add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setEditable(!editable);
-            }
-        });
-
         recycler = (RecyclerView) findViewById(R.id.activity_editor_recycler);
         layout_manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         adapter = new EditorAdapter();
-
-
-        TextStyle heading = new TextStyle();
-        heading.size = 24;
-        heading.color = "#000000";
-        heading.indentation = 0;
-
-        TextStyle subheading = new TextStyle();
-        subheading.size = 18;
-        subheading.color = "#696969";
-        subheading.indentation = 1;
-
-        TextStyle paragraph = new TextStyle();
-        paragraph.size = 12;
-        paragraph.color = "#000000";
-        paragraph.indentation = 2;
-
-        adapter.add(TextBlockItem.DataHolder.create("", "Title", heading));
-        adapter.add(TextBlockItem.DataHolder.create("", "Subtitle", subheading));
-        adapter.add(TextBlockItem.DataHolder.create("", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", paragraph));
-        adapter.add(TextBlockItem.DataHolder.create("", "Subtitle 2", subheading));
-        adapter.add(TextBlockItem.DataHolder.create("", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", paragraph));
-        adapter.add(TextBlockItem.DataHolder.create("", "Subtitle 3", subheading));
-        adapter.add(TextBlockItem.DataHolder.create("", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", paragraph));
-        adapter.add(TextBlockItem.DataHolder.create("", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", paragraph));
-
 
         recycler.setLayoutManager(layout_manager);
         recycler.setAdapter(adapter);
@@ -116,8 +90,6 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                 .addOnConnectionFailedListener(this)
                 .build();
 
-        Log.d("test", "DriveId: "+getIntent().getStringExtra("file"));
-
     }
 
     private void setEditable(boolean editable) {
@@ -125,6 +97,12 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         if(editable) i.putExtra("action", "entereditmode");
         else i.putExtra("action", "exiteditmode");
         lbcm.sendBroadcast(i);
+
+        Drawable d = null;
+        if(editable) d = getResources().getDrawable(R.drawable.ic_add_white_24dp);
+        else d = getResources().getDrawable(R.drawable.ic_mode_edit_white_24dp);
+
+        fab_add.setImageDrawable(d);
 
         this.editable = editable;
         adapter.editable(editable);
@@ -148,13 +126,34 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-        Log.d("test", "DriveId: "+getIntent().getStringExtra("file"));
+    public void onBackPressed() {
+        if(editable) setEditable(false);
+        else super.onBackPressed();
+    }
 
+    @Override
+    public void onConnected(Bundle bundle) {
         DriveId id = DriveId.decodeFromString(getIntent().getStringExtra("file"));
         DriveFile file = Drive.DriveApi.getFile(googleClient, id);
 
         doc = new Document(googleClient);
+
+        doc.setOnDocumentLoadedListener(new Document.DocumentLoadedCallback() {
+            @Override
+            public void onDocumentLoaded() {
+                adapter.add(doc.getHolders());
+
+                fab_add.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!editable) setEditable(true);
+                        else {
+                            DialogUtil.createAddTextBlockItemDialog(EditorActivity.this, doc.getMaster()).show();
+                        }
+                    }
+                });
+            }
+        });
 
         doc.load(file);
     }

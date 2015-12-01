@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.Adapter;
+import at.dingbat.type.model.TextBlock;
 import at.dingbat.type.model.TextStyle;
 
 /**
@@ -35,6 +37,7 @@ public class TextBlockItem extends RelativeLayout implements Editable {
     private TextView text;
 
     private boolean editable = false;
+    private boolean isAnimationRunning = false;
 
     private LocalBroadcastManager lbcm;
 
@@ -65,86 +68,132 @@ public class TextBlockItem extends RelativeLayout implements Editable {
         }, new IntentFilter("at.dingbat.type"));
     }
 
-    public void setEditable(boolean editable) {
-        if(this.editable && !editable) {
-            text.setText(edit.getText());
-            edit.setVisibility(GONE);
-            text.setVisibility(VISIBLE);
+    public void setEditable(final boolean editable) {
+        if(!isAnimationRunning) {
+            if (this.editable && !editable) {
+                isAnimationRunning = true;
+                text.setText(edit.getText());
+                edit.setVisibility(GONE);
+                text.setVisibility(VISIBLE);
 
-            ValueAnimator animator = ValueAnimator.ofFloat(1f, 0f);
-            animator.setDuration(150).setInterpolator(new AccelerateDecelerateInterpolator());
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controls_container.getLayoutParams();
-                    params.width = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
-                    params.height = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
-                    controls_container.setLayoutParams(params);
-                    text_container.setMinimumHeight((int) getResources().getDimension(R.dimen.list_item_primary_control_width));
-                }
-            });
-            animator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
+                controls.animate().setDuration(150).setInterpolator(new AccelerateInterpolator()).scaleX(0).scaleY(0).alpha(0).setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
 
-                }
+                    }
 
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    controls.animate().setDuration(150).setInterpolator(new AccelerateInterpolator()).scaleX(0).scaleY(0).alpha(0);
-                }
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        ValueAnimator animator = ValueAnimator.ofFloat(1f, 0f);
+                        animator.setDuration(150).setInterpolator(new AccelerateDecelerateInterpolator());
+                        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator animation) {
+                                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controls_container.getLayoutParams();
+                                params.width = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
+                                params.height = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
+                                controls_container.setLayoutParams(params);
+                                text_container.setMinimumHeight((int) getResources().getDimension(R.dimen.list_item_primary_control_width));
+                            }
+                        });
+                        animator.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
 
-                @Override
-                public void onAnimationCancel(Animator animation) {
+                            }
 
-                }
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                isAnimationRunning = false;
+                                TextBlockItem.this.editable = false;
+                            }
 
-                @Override
-                public void onAnimationRepeat(Animator animation) {
+                            @Override
+                            public void onAnimationCancel(Animator animation) {
 
-                }
-            });
-            animator.start();
+                            }
 
-        } else if(!this.editable && editable) {
-            edit.setVisibility(VISIBLE);
-            text.setVisibility(GONE);
+                            @Override
+                            public void onAnimationRepeat(Animator animation) {
 
-            ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-            animator.setDuration(150).setInterpolator(new AccelerateDecelerateInterpolator());
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controls_container.getLayoutParams();
-                    params.width = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
-                    controls_container.setLayoutParams(params);
-                }
-            });
-            animator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
+                            }
+                        });
+                        animator.start();
+                    }
 
-                }
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
 
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    controls.animate().setDuration(150).setInterpolator(new DecelerateInterpolator()).scaleX(1).scaleY(1).alpha(1);
-                }
+                    }
 
-                @Override
-                public void onAnimationCancel(Animator animation) {
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
 
-                }
+                    }
+                });
 
-                @Override
-                public void onAnimationRepeat(Animator animation) {
+            } else if (!this.editable && editable) {
+                isAnimationRunning = true;
+                edit.setVisibility(VISIBLE);
+                text.setVisibility(GONE);
 
-                }
-            });
-            animator.start();
+                ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+                animator.setDuration(150).setInterpolator(new AccelerateDecelerateInterpolator());
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controls_container.getLayoutParams();
+                        params.width = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
+                        params.height = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
+                        controls_container.setLayoutParams(params);
+                        text_container.setMinimumHeight((int) getResources().getDimension(R.dimen.list_item_height));
+                    }
+                });
+                animator.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
 
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        controls.animate().setDuration(150).setInterpolator(new DecelerateInterpolator()).scaleX(1).scaleY(1).alpha(1).setListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                isAnimationRunning = false;
+                                TextBlockItem.this.editable = true;
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animation) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+                animator.start();
+            }
         }
-        this.editable = editable;
     }
 
     @Override
@@ -158,27 +207,23 @@ public class TextBlockItem extends RelativeLayout implements Editable {
     }
 
     public void setDataHolder(DataHolder holder) {
-        edit.setText(holder.content);
-        text.setText(holder.content);
+        edit.setText(holder.block.content);
+        text.setText(holder.block.content);
 
-        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.style.size);
-        text.setTextColor(Color.parseColor(holder.style.color));
-        text.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.style.indentation), 0, 0, 0);
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
+        text.setTextColor(Color.parseColor(holder.block.style.color));
+        text.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
 
-        edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.style.size);
-        edit.setTextColor(Color.parseColor(holder.style.color));
-        edit.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.style.indentation), 0, 0, 0);
+        edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
+        edit.setTextColor(Color.parseColor(holder.block.style.color));
+        edit.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
     }
 
     public static class DataHolder extends Adapter.DataHolder {
-        public String uuid;
-        public String content;
-        public TextStyle style;
-        public static DataHolder create(String uuid, String content, TextStyle style) {
+        public TextBlock block;
+        public static DataHolder create(TextBlock block) {
             DataHolder holder = new DataHolder();
-            holder.uuid = uuid;
-            holder.content = content;
-            holder.style = style;
+            holder.block = block;
             return holder;
         }
     }

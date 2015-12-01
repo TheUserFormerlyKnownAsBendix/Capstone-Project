@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    android:background="?attr/selectableItemBackground">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="@dimen/list_item_primary_control_size"
+        android:layout_height="@dimen/list_item_primary_control_size"
+        app:cardCornerRadius="@dimen/list_item_primary_control_radius"
+        android:layout_marginRight="@dimen/margin"
+        app:cardBackgroundColor="?attr/colorPrimary"
+        android:layout_gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_add_item_list_item_primary_title_short"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/widget_add_Item_list_item_primary_image"
+            android:layout_width="@dimen/list_item_primary_control_image"
+            android:layout_height="@dimen/list_item_primary_control_image"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_description_white_24dp"
+            android:visibility="gone"/>
+
+    </android.support.v7.widget.CardView>
+
+    <TextView
+        android:id="@+id/widget_add_item_list_item_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
+</LinearLayout>
