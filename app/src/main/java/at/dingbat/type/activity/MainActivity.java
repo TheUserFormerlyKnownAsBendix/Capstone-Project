@@ -1,7 +1,13 @@
 package at.dingbat.type.activity;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
+import android.sax.TextElementListener;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -9,15 +15,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
@@ -27,6 +38,10 @@ import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.MetadataBuffer;
+import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.Adapter;
@@ -42,6 +57,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private DriveContents contents;
 
     private DrawerLayout drawer;
+    private ImageView profile_cover;
+    private ImageView profile_photo;
+    private TextView profile_display_name;
+    private TextView profile_email;
+
     private FloatingActionButton fab_add;
     private FloatingActionButton fab_add_file;
     private FloatingActionButton fab_add_folder;
@@ -64,6 +84,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         getSupportActionBar().setTitle(R.string.app_name);
 
         drawer = (DrawerLayout) findViewById(R.id.activity_main_drawer);
+        profile_cover = (ImageView) findViewById(R.id.drawer_profile_cover);
+        profile_photo = (ImageView) findViewById(R.id.drawer_profile_photo);
+        profile_display_name = (TextView) findViewById(R.id.drawer_profile_display_name);
+        profile_email = (TextView) findViewById(R.id.drawer_profile_email);
         fab_add = (FloatingActionButton) findViewById(R.id.activity_main_add);
         fab_add_file = (FloatingActionButton) findViewById(R.id.activity_main_add_file);
         fab_add_folder = (FloatingActionButton) findViewById(R.id.activity_main_add_folder);
@@ -132,7 +156,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         googleClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
+                .addApi(Plus.API)
                 .addScope(Drive.SCOPE_FILE)
+                .addScope(Plus.SCOPE_PLUS_PROFILE)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -202,6 +228,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnected(Bundle bundle) {
         reload();
+
+        if(Plus.PeopleApi.getCurrentPerson(googleClient) != null) {
+            Person current = Plus.PeopleApi.getCurrentPerson(googleClient);
+            Picasso.with(this).load(current.getImage().getUrl()).into(profile_photo);
+            Picasso.with(this).load(current.getCover().getCoverPhoto().getUrl()).into(profile_cover);
+
+            profile_display_name.setText(current.getDisplayName());
+            profile_email.setText(Plus.AccountApi.getAccountName(googleClient));
+        } else Log.e("test", "Account is null");
     }
 
     @Override
