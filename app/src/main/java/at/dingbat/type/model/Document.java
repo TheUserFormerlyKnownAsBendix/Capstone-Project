@@ -1,5 +1,7 @@
 package at.dingbat.type.model;
 
+import android.util.Log;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.maps.model.LatLng;
@@ -14,6 +16,10 @@ import java.util.Iterator;
 import at.dingbat.type.adapter.Adapter;
 import at.dingbat.type.util.ApiUtil;
 import at.dingbat.type.widget.TextBlockItem;
+import difflib.DiffRowGenerator;
+import difflib.DiffUtils;
+import difflib.Patch;
+import difflib.StringUtills;
 
 /**
  * Copyright (c) 2015, bd421 GmbH
@@ -22,6 +28,7 @@ import at.dingbat.type.widget.TextBlockItem;
 public class Document {
 
     private GoogleApiClient client;
+    private DriveFile file;
 
     private double version;
     private ArrayList<LatLng> locations;
@@ -37,8 +44,54 @@ public class Document {
         this.blocks = new ArrayList<>();
     }
 
-    public void patchTextBlock(String diff, String uuid) {
+    public void patchTextBlock(String uuid, String content) {
+        TextBlock block = getTextBlock(uuid);
+        if(block != null) block.content = content;
+    }
 
+    public void addTextBlock(TextBlock block) {
+        this.blocks.add(block);
+    }
+
+    public TextBlock getTextBlock(String UUID) {
+        for(TextBlock block: blocks) {
+            if(block.UUID.equals(UUID)) return block;
+        }
+        return null;
+    }
+
+    public JSONObject renderJSON() {
+        JSONObject doc = new JSONObject();
+        try {
+            JSONObject typo = new JSONObject();
+            typo.put("version", "1.0");
+
+            JSONArray location = new JSONArray();
+            for(LatLng latlng: locations) {
+                JSONObject l = new JSONObject();
+                l.put("lat", latlng.latitude);
+                l.put("lon", latlng.longitude);
+                location.put(l);
+            }
+
+            JSONObject styles = new JSONObject();
+            for(TextStyle style: master) {
+                styles.put(style.type, style.renderJSON());
+            }
+
+            JSONArray root = new JSONArray();
+            for(TextBlock block: blocks) {
+                root.put(block.renderJSON());
+            }
+
+            doc.put("typo", typo);
+            doc.put("location", location);
+            doc.put("master", styles);
+            doc.put("root", root);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return doc;
     }
 
     public void parseJSON(String content) {
@@ -85,6 +138,7 @@ public class Document {
     }
 
     public void load(DriveFile file) {
+        this.file = file;
         ApiUtil.readFile(client, file, new ApiUtil.FileReadCallback() {
             @Override
             public void onFileRead(String content) {
@@ -98,7 +152,9 @@ public class Document {
     }
 
     public void save() {
-
+        String f = renderJSON().toString();
+        Log.d("text", "Saving file: " + f);
+        ApiUtil.writeFile(client, file, renderJSON().toString());
     }
 
     public ArrayList<Adapter.DataHolder> getHolders() {

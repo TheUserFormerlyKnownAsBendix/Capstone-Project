@@ -39,4 +39,17 @@ public class TextBlock {
         }
         return block;
     }
+
+    public JSONObject renderJSON() {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("UUID", UUID);
+            if(type != null) obj.put("type", type);
+            obj.put("content", content);
+            if(style != null) obj.put("style", style.renderJSON());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
 }

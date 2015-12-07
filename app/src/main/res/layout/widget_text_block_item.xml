@@ -37,6 +37,7 @@
         android:id="@+id/widget_text_block_item_text_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:layout_weight="1">
 
         <EditText

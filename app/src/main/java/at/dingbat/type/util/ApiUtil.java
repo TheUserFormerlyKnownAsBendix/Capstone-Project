@@ -126,8 +126,25 @@ public class ApiUtil {
         });
     }
 
+    public static void writeFile(final GoogleApiClient client, DriveFile file, final String json) {
+        file.open(client, DriveFile.MODE_READ_WRITE, null).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+            @Override
+            public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
+                DriveContents contents = driveContentsResult.getDriveContents();
+                ParcelFileDescriptor parcelFileDescriptor = contents.getParcelFileDescriptor();
+                FileOutputStream out = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+                try {
+                    out.getChannel().truncate(0);
+                    out.write(json.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                contents.commit(client, null);
+            }
+        });
+    }
 
-        public static interface LoginCallback {
+    public static interface LoginCallback {
         void onLoggedIn(GoogleSignInResult result);
     }
 

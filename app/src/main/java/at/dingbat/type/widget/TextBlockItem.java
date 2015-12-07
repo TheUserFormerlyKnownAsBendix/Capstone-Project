@@ -9,8 +9,10 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.CardView;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
@@ -28,6 +30,8 @@ import at.dingbat.type.model.TextStyle;
  * Created by Max on 11/24/2015.
  */
 public class TextBlockItem extends RelativeLayout implements Editable {
+
+    private TextBlock block;
 
     private RelativeLayout controls_container;
     private RelativeLayout text_container;
@@ -66,6 +70,27 @@ public class TextBlockItem extends RelativeLayout implements Editable {
                 }
             }
         }, new IntentFilter("at.dingbat.type"));
+
+        edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                Intent i = new Intent("at.dingbat.type");
+                i.putExtra("action", "patch");
+                i.putExtra("uuid", block.UUID);
+                i.putExtra("content", s.toString());
+                lbcm.sendBroadcast(i);
+            }
+        });
     }
 
     public void setEditable(final boolean editable) {
@@ -207,16 +232,21 @@ public class TextBlockItem extends RelativeLayout implements Editable {
     }
 
     public void setDataHolder(DataHolder holder) {
-        edit.setText(holder.block.content);
-        text.setText(holder.block.content);
+        this.block = holder.block;
+        try {
+            edit.setText(holder.block.content);
+            text.setText(holder.block.content);
 
-        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
-        text.setTextColor(Color.parseColor(holder.block.style.color));
-        text.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
+            text.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
+            text.setTextColor(Color.parseColor(holder.block.style.color));
+            text.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
 
-        edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
-        edit.setTextColor(Color.parseColor(holder.block.style.color));
-        edit.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
+            edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
+            edit.setTextColor(Color.parseColor(holder.block.style.color));
+            edit.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static class DataHolder extends Adapter.DataHolder {

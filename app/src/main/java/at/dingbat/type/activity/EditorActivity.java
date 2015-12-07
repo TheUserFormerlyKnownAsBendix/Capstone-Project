@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -28,9 +29,15 @@ import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveId;
 
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.EditorAdapter;
 import at.dingbat.type.model.Document;
+import at.dingbat.type.model.TextBlock;
 import at.dingbat.type.model.TextStyle;
 import at.dingbat.type.util.DialogUtil;
 import at.dingbat.type.widget.TextBlockItem;
@@ -42,6 +49,8 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     private RecyclerView recycler;
     private LinearLayoutManager layout_manager;
     private EditorAdapter adapter;
+
+    private CollapsingToolbarLayout ctl;
 
     private boolean editable = false;
 
@@ -62,6 +71,8 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
         fab_add = (FloatingActionButton) findViewById(R.id.activity_editor_add);
 
+        ctl = (CollapsingToolbarLayout) findViewById(R.id.activity_editor_collapsing_toolbar_layout);
+
         recycler = (RecyclerView) findViewById(R.id.activity_editor_recycler);
         layout_manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         adapter = new EditorAdapter();
@@ -75,10 +86,18 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getStringExtra("action");
-                if(action.equals("patch")) {
+                if(action.equals("create")) {
+                    TextBlock block = new TextBlock();
+                    block.UUID = UUID.randomUUID().toString();
+                    if(intent.hasExtra("type")) block.type = intent.getStringExtra("type");
+                    else block.type = "default";
+                    block.content = "";
+                    doc.addTextBlock(block);
+                    adapter.add(TextBlockItem.DataHolder.create(block));
+                } else if(action.equals("patch")) {
                     String uuid = intent.getStringExtra("uuid");
-                    String[] diff = intent.getStringArrayExtra("diff");
-
+                    String content = intent.getStringExtra("content");
+                    doc.patchTextBlock(uuid, content);
                 }
             }
         }, new IntentFilter("at.dingbat.type"));
@@ -89,6 +108,14 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                doc.save();
+            }
+        }, 0, 1, TimeUnit.MINUTES);
 
     }
 
@@ -113,6 +140,13 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         super.onStart();
 
         googleClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        doc.save();
+
+        super.onStop();
     }
 
     @Override
