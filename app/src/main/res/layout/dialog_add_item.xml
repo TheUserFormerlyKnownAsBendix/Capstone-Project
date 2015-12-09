@@ -14,13 +14,17 @@
         android:text="Select item"
         android:textColor="@color/black"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/dialog_add_item_recycler"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:padding="24dp"
+        android:paddingBottom="24dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="8dp"
         android:clipToPadding="false">
 
     </android.support.v7.widget.RecyclerView>

@@ -60,6 +60,13 @@ public class Document {
         return null;
     }
 
+    public TextStyle getTextStyle(String type) {
+        for(TextStyle s: master) {
+            if(s.type.equals(type)) return s;
+        }
+        return null;
+    }
+
     public JSONObject renderJSON() {
         JSONObject doc = new JSONObject();
         try {

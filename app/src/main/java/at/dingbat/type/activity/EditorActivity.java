@@ -91,6 +91,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                     block.UUID = UUID.randomUUID().toString();
                     if(intent.hasExtra("type")) block.type = intent.getStringExtra("type");
                     else block.type = "default";
+                    block.style = doc.getTextStyle(block.type);
                     block.content = "";
                     doc.addTextBlock(block);
                     adapter.add(TextBlockItem.DataHolder.create(block));

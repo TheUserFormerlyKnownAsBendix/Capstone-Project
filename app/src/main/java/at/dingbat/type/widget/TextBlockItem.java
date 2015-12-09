@@ -118,7 +118,6 @@ public class TextBlockItem extends RelativeLayout implements Editable {
                                 params.width = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
                                 params.height = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
                                 controls_container.setLayoutParams(params);
-                                text_container.setMinimumHeight((int) getResources().getDimension(R.dimen.list_item_primary_control_width));
                             }
                         });
                         animator.addListener(new Animator.AnimatorListener() {
@@ -171,7 +170,6 @@ public class TextBlockItem extends RelativeLayout implements Editable {
                         params.width = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
                         params.height = (int) ((float) animation.getAnimatedValue() * getResources().getDimension(R.dimen.list_item_primary_control_width));
                         controls_container.setLayoutParams(params);
-                        text_container.setMinimumHeight((int) getResources().getDimension(R.dimen.list_item_height));
                     }
                 });
                 animator.addListener(new Animator.AnimatorListener() {
