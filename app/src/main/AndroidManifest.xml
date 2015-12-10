@@ -28,6 +28,10 @@
         <activity
             android:name=".activity.EditorActivity"
             android:label="@string/title_activity_editor"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".activity.BrowserActivity"
+            android:label="@string/title_activity_browser"
             android:theme="@style/AppTheme"></activity>
     </application>
 

@@ -1,27 +1,22 @@
 package at.dingbat.type.activity;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.Bundle;
-import android.sax.TextElementListener;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,17 +26,15 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
@@ -52,7 +45,6 @@ import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.Adapter;
@@ -65,7 +57,7 @@ import at.dingbat.type.widget.FolderListItem;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleApiClient googleClient;
-    private DriveContents contents;
+    private LocalBroadcastManager lbcm;
 
     private Menu menu;
 
@@ -102,6 +94,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(R.string.app_name);
 
+        lbcm = LocalBroadcastManager.getInstance(this);
+        lbcm.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.hasExtra("action")) {
+                    String action = intent.getStringExtra("action");
+                    if(action.equals("createfile")) {
+                        ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FileCreatedCallback() {
+                            @Override
+                            public void onFileCreated(DriveFile file) {
+                                if(file != null) {
+                                    Intent i = new Intent(MainActivity.this, EditorActivity.class);
+                                    i.putExtra("file", file.getDriveId().toString());
+                                    startActivity(i);
+                                }
+                            }
+                        });
+                    } else if(action.equals("createfolder")) {
+                        ApiUtil.createFolder(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FolderCreatedCallback() {
+                            @Override
+                            public void onFolderCreated(DriveFolder folder) {
+                                if(folder != null) reload();
+                            }
+                        });
+                    }
+                }
+            }
+        }, new IntentFilter("at.dingbat.type"));
+
         drawer = (DrawerLayout) findViewById(R.id.activity_main_drawer);
         profile_cover = (ImageView) findViewById(R.id.drawer_profile_cover);
         profile_photo = (ImageView) findViewById(R.id.drawer_profile_photo);
@@ -124,12 +145,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_add_file.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*ApiUtil.createFile(googleClient, "Untitled", Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FileCreatedCallback() {
-                    @Override
-                    public void onFileCreated(DriveFile file) {
-                        if(file != null) reload();
-                    }
-                });*/
+                DialogUtil.createFileDialog(MainActivity.this).show();
                 revertFABAnimation();
             }
         });
@@ -137,13 +153,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_add_folder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*ApiUtil.createFolder(googleClient, "Untitled", Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FolderCreatedCallback() {
-                    @Override
-                    public void onFolderCreated(DriveFolder folder) {
-                        if(folder != null) reload();
-                    }
-                });*/
-                DialogUtil.createFolderTitleDialog(MainActivity.this).show();
+                DialogUtil.createFolderDialog(MainActivity.this).show();
                 revertFABAnimation();
             }
         });
@@ -187,6 +197,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    ApiUtil.search(googleClient, search.getText().toString(), new ApiUtil.SearchCallback() {
+                        @Override
+                        public void onResult(DriveApi.MetadataBufferResult result) {
+                            MetadataBuffer buffer = result.getMetadataBuffer();
+                            for(int i = 0; i < buffer.getCount(); i++) {
+                                if(!buffer.get(i).isTrashed()) results.add(FileListItem.DataHolder.create(buffer.get(i)));
+                            }
+                        }
+                    });
+                    return true;
+                }
                 return false;
             }
         });
@@ -307,13 +329,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 folders.clear();
 
                 for (int i = 0; i < buffer.getCount(); i++) {
-                    if (!buffer.get(i).isFolder())
-                        files.add(FileListItem.DataHolder.create(buffer.get(i)));
-                    else folders.add(FolderListItem.DataHolder.create(buffer.get(i)));
+                    if(!buffer.get(i).isTrashed()) {
+                        if (!buffer.get(i).isFolder())
+                            files.add(FileListItem.DataHolder.create(buffer.get(i)));
+                        else folders.add(FolderListItem.DataHolder.create(buffer.get(i)));
+                    }
                 }
 
                 adapter.addSection(folders);
                 adapter.addSection(files);
+                adapter.notifySectionChanged();
             }
         });
     }

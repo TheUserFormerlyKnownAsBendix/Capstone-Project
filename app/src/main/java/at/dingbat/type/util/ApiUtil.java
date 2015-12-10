@@ -1,6 +1,7 @@
 package at.dingbat.type.util;
 
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -13,7 +14,12 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveResource;
+import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -21,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 
 import at.dingbat.type.model.Document;
 
@@ -29,7 +36,7 @@ import at.dingbat.type.model.Document;
  */
 public class ApiUtil {
 
-    public static final String DEFAULT_TEMPLATE = "{\"typo\":{\"version\":\"1.0\",},\"location\":[],\"master\":{\"default\":{\"size\":14,\"color\":black},\"title\":{\"size\":56,\"color\":black},\"subtitle\":{\"size\":32,\"color\":grey},\"paragraph\":{\"size\":24,\"color\":black}},\"root\":[],\"images\":{}}";
+    public static final String DEFAULT_TEMPLATE = "{\"typo\":{\"version\":\"1.0\"},\"location\":[],\"master\":{\"default\":{\"size\":10,\"color\":\"#000000\",\"indentation\":0},\"display1\":{\"title\":\"Display 1\",\"size\":34,\"color\":\"#000000\",\"indentation\":0},\"headline\":{\"title\":\"Headline\",\"size\":24,\"color\":\"#000000\",\"indentation\":0},\"title\":{\"title\":\"Title\",\"size\":20,\"color\":\"#000000\",\"indentation\":0},\"subheading\":{\"title\":\"Subheading\",\"size\":16,\"color\":\"#000000\",\"indentation\":0},\"body\":{\"title\":\"Body\",\"size\":14,\"color\":\"#000000\",\"indentation\":0}},\"root\":[]}";
 
     public static void silentLogin(GoogleApiClient client, final LoginCallback callback) {
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(client);
@@ -50,6 +57,15 @@ public class ApiUtil {
             @Override
             public void onResult(DriveApi.MetadataBufferResult result) {
                 callback.onFolderContentsLoaded(result);
+            }
+        });
+    }
+
+    public static void getMetadata(GoogleApiClient client, DriveFile file, final MetadataLoadedCallback callback) {
+        file.getMetadata(client).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+            @Override
+            public void onResult(DriveResource.MetadataResult metadataResult) {
+                callback.onMetadataLoaded(metadataResult);
             }
         });
     }
@@ -77,28 +93,10 @@ public class ApiUtil {
                 folder.createFile(client, file, result.getDriveContents()).setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
                     @Override
                     public void onResult(final DriveFolder.DriveFileResult driveFileResult) {
-                        driveFileResult.getDriveFile().open(client, DriveFile.MODE_WRITE_ONLY, null).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+                        writeFile(client, driveFileResult.getDriveFile(), DEFAULT_TEMPLATE, new Document.DocumentSavedCallback() {
                             @Override
-                            public void onResult(final DriveApi.DriveContentsResult result) {
-                                ParcelFileDescriptor parcelFileDescriptor = result.getDriveContents().getParcelFileDescriptor();
-                                FileOutputStream out = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
-                                Writer writer = new OutputStreamWriter(out);
-                                try {
-                                    writer.write(DEFAULT_TEMPLATE);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } finally {
-                                    try {
-                                        out.close();
-                                    } catch (IOException e) {
-                                    }
-                                    result.getDriveContents().commit(client, null).setResultCallback(new ResultCallback<Status>() {
-                                        @Override
-                                        public void onResult(Status status) {
-                                            callback.onFileCreated(driveFileResult.getDriveFile());
-                                        }
-                                    });
-                                }
+                            public void onSaved() {
+                                callback.onFileCreated(driveFileResult.getDriveFile());
                             }
                         });
                     }
@@ -147,6 +145,20 @@ public class ApiUtil {
         });
     }
 
+    public static void search(final GoogleApiClient client, String title, final SearchCallback callback) {
+        Query query = new Query.Builder()
+                .addFilter(Filters.and(
+                        Filters.eq(SearchableField.MIME_TYPE, "text/typo"),
+                        Filters.contains(SearchableField.TITLE, title)
+                )).build();
+        Drive.DriveApi.query(client, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(DriveApi.MetadataBufferResult result) {
+                callback.onResult(result);
+            }
+        });
+    }
+
     public static interface LoginCallback {
         void onLoggedIn(GoogleSignInResult result);
     }
@@ -165,6 +177,14 @@ public class ApiUtil {
 
     public static interface FileReadCallback {
         void onFileRead(String content);
+    }
+
+    public static interface SearchCallback {
+        void onResult(DriveApi.MetadataBufferResult result);
+    }
+
+    public static interface MetadataLoadedCallback {
+        void onMetadataLoaded(DriveResource.MetadataResult result);
     }
 
 }

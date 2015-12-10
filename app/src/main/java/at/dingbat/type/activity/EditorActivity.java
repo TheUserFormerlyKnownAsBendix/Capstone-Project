@@ -68,7 +68,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Untitled");
+        getSupportActionBar().setTitle("");
 
         fab_add = (FloatingActionButton) findViewById(R.id.activity_editor_add);
 
@@ -188,6 +188,8 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
             @Override
             public void onDocumentLoaded() {
                 adapter.add(doc.getHolders());
+
+                getSupportActionBar().setTitle(doc.getTitle());
 
                 fab_add.setOnClickListener(new View.OnClickListener() {
                     @Override

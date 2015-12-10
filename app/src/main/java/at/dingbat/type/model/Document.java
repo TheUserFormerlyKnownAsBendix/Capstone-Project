@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.DriveFile;
+import com.google.android.gms.drive.DriveResource;
+import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -29,7 +31,9 @@ public class Document {
 
     private GoogleApiClient client;
     private DriveFile file;
+    private Metadata metadata;
 
+    private String title;
     private double version;
     private ArrayList<LatLng> locations;
     private ArrayList<TextStyle> master;
@@ -151,6 +155,13 @@ public class Document {
 
     public void load(DriveFile file) {
         this.file = file;
+        ApiUtil.getMetadata(client, file, new ApiUtil.MetadataLoadedCallback() {
+            @Override
+            public void onMetadataLoaded(DriveResource.MetadataResult result) {
+                metadata = result.getMetadata();
+                title = metadata.getTitle();
+            }
+        });
         ApiUtil.readFile(client, file, new ApiUtil.FileReadCallback() {
             @Override
             public void onFileRead(String content) {
@@ -179,6 +190,10 @@ public class Document {
 
     public ArrayList<TextStyle> getMaster() {
         return master;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public static interface DocumentLoadedCallback {

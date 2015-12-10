@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="280dp"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/dialog_create_file_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:text="New File"
+        android:textColor="@color/black"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="24dp"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/dialog_create_file_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp">
+
+        <EditText
+            android:id="@+id/dialog_create_file_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Untitled file"
+            android:selectAllOnFocus="true" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="right">
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/dialog_create_file_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="CANCEL"
+            android:elevation="2dp"
+            android:textColor="?attr/colorPrimary"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/dialog_create_file_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
+            android:text="OK"
+            android:elevation="2dp"
+            android:textColor="?attr/colorPrimary"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+
+    </LinearLayout>
+
+</LinearLayout>
