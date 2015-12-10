@@ -37,6 +37,8 @@ public class Document {
 
     private DocumentLoadedCallback documentLoaded;
 
+    private boolean changed = false;
+
     public Document(GoogleApiClient client) {
         this.client = client;
         this.locations = new ArrayList<>();
@@ -46,7 +48,10 @@ public class Document {
 
     public void patchTextBlock(String uuid, String content) {
         TextBlock block = getTextBlock(uuid);
-        if(block != null) block.content = content;
+        if(block != null && !block.content.equals(content)) {
+            block.content = content;
+            changed = true;
+        }
     }
 
     public void addTextBlock(TextBlock block) {
@@ -158,10 +163,10 @@ public class Document {
         this.documentLoaded = callback;
     }
 
-    public void save() {
-        String f = renderJSON().toString();
-        Log.d("text", "Saving file: " + f);
-        ApiUtil.writeFile(client, file, renderJSON().toString());
+    public void save(DocumentSavedCallback callback) {
+        if(changed) {
+            ApiUtil.writeFile(client, file, renderJSON().toString(), callback);
+        }
     }
 
     public ArrayList<Adapter.DataHolder> getHolders() {
@@ -178,6 +183,10 @@ public class Document {
 
     public static interface DocumentLoadedCallback {
         void onDocumentLoaded();
+    }
+
+    public static interface DocumentSavedCallback {
+        void onSaved();
     }
 
 }

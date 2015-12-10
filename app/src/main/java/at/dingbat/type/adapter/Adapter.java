@@ -102,6 +102,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         this.notifyDataSetChanged();
     }
 
+    public void clear() {
+        this.sections.clear();
+        this.holders.clear();
+        this.notifyDataSetChanged();
+    }
+
     public static class DataHolder {
 
     }

@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -114,7 +115,12 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                doc.save();
+                doc.save(new Document.DocumentSavedCallback() {
+                    @Override
+                    public void onSaved() {
+
+                    }
+                });
             }
         }, 0, 1, TimeUnit.MINUTES);
 
@@ -145,7 +151,12 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     protected void onStop() {
-        doc.save();
+        doc.save(new Document.DocumentSavedCallback() {
+            @Override
+            public void onSaved() {
+                Toast.makeText(EditorActivity.this, "Document saved!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         super.onStop();
     }

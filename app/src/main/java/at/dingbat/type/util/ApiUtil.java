@@ -22,6 +22,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import at.dingbat.type.model.Document;
+
 /**
  * Created by Max on 11/21/2015.
  */
@@ -126,7 +128,7 @@ public class ApiUtil {
         });
     }
 
-    public static void writeFile(final GoogleApiClient client, DriveFile file, final String json) {
+    public static void writeFile(final GoogleApiClient client, DriveFile file, final String json, final Document.DocumentSavedCallback callback) {
         file.open(client, DriveFile.MODE_READ_WRITE, null).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
             @Override
             public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
@@ -136,6 +138,7 @@ public class ApiUtil {
                 try {
                     out.getChannel().truncate(0);
                     out.write(json.getBytes());
+                    callback.onSaved();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
