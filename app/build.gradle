@@ -32,4 +32,6 @@ dependencies {
     compile 'com.googlecode.java-diff-utils:diffutils:1.3.0'
     compile 'com.google.android.gms:play-services-plus:8.3.0'
     compile 'com.squareup.picasso:picasso:2.3.2'
+    compile 'com.google.android.gms:play-services-location:8.3.0'
+    compile project(':apiutils')
 }

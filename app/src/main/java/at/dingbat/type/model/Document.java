@@ -1,11 +1,16 @@
 package at.dingbat.type.model;
 
-import android.util.Log;
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.net.Uri;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.drive.metadata.CustomPropertyKey;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -14,20 +19,17 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
+import at.dingbat.apiutils.ApiUtil;
 import at.dingbat.type.adapter.Adapter;
-import at.dingbat.type.util.ApiUtil;
 import at.dingbat.type.widget.TextBlockItem;
-import difflib.DiffRowGenerator;
-import difflib.DiffUtils;
-import difflib.Patch;
-import difflib.StringUtills;
 
 /**
  * Copyright (c) 2015, bd421 GmbH
  * All Rights Reserved
  */
-public class Document {
+public class Document extends ContentProvider {
 
     private GoogleApiClient client;
     private DriveFile file;
@@ -35,7 +37,7 @@ public class Document {
 
     private String title;
     private double version;
-    private ArrayList<LatLng> locations;
+    private LatLng location;
     private ArrayList<TextStyle> master;
     private ArrayList<TextBlock> blocks;
 
@@ -45,7 +47,6 @@ public class Document {
 
     public Document(GoogleApiClient client) {
         this.client = client;
-        this.locations = new ArrayList<>();
         this.master = new ArrayList<>();
         this.blocks = new ArrayList<>();
     }
@@ -82,14 +83,6 @@ public class Document {
             JSONObject typo = new JSONObject();
             typo.put("version", "1.0");
 
-            JSONArray location = new JSONArray();
-            for(LatLng latlng: locations) {
-                JSONObject l = new JSONObject();
-                l.put("lat", latlng.latitude);
-                l.put("lon", latlng.longitude);
-                location.put(l);
-            }
-
             JSONObject styles = new JSONObject();
             for(TextStyle style: master) {
                 styles.put(style.type, style.renderJSON());
@@ -115,13 +108,6 @@ public class Document {
             JSONObject document = new JSONObject(content);
             this.version = Double.parseDouble(document.getJSONObject("typo").getString("version"));
             if(this.version == 1) {
-                if(document.has("locations")) {
-                    JSONArray loc = document.getJSONArray("locations");
-                    for (int i = 0; i < loc.length(); i++) {
-                        LatLng latlng = new LatLng(loc.getJSONObject(i).getDouble("lat"), loc.getJSONObject(i).getDouble("lng"));
-                        this.locations.add(latlng);
-                    }
-                }
                 if(document.has("master")) {
                     JSONObject styles = document.getJSONObject("master");
                     Iterator<?> keys = styles.keys();
@@ -160,6 +146,12 @@ public class Document {
             public void onMetadataLoaded(DriveResource.MetadataResult result) {
                 metadata = result.getMetadata();
                 title = metadata.getTitle();
+                Map<CustomPropertyKey, String> properties = metadata.getCustomProperties();
+                CustomPropertyKey lat = new CustomPropertyKey("lat", CustomPropertyKey.PUBLIC);
+                CustomPropertyKey lon = new CustomPropertyKey("lon", CustomPropertyKey.PUBLIC);
+                if (properties.containsKey(lat) && properties.containsKey(lon)) {
+                    location = new LatLng(Double.parseDouble(properties.get(lat)), Double.parseDouble(properties.get(lon)));
+                }
             }
         });
         ApiUtil.readFile(client, file, new ApiUtil.FileReadCallback() {
@@ -174,7 +166,7 @@ public class Document {
         this.documentLoaded = callback;
     }
 
-    public void save(DocumentSavedCallback callback) {
+    public void save(at.dingbat.apiutils.ApiUtil.DocumentSavedCallback callback) {
         if(changed) {
             ApiUtil.writeFile(client, file, renderJSON().toString(), callback);
         }
@@ -196,12 +188,41 @@ public class Document {
         return title;
     }
 
-    public static interface DocumentLoadedCallback {
-        void onDocumentLoaded();
+    @Override
+    public boolean onCreate() {
+        return false;
     }
 
-    public static interface DocumentSavedCallback {
-        void onSaved();
+    @Nullable
+    @Override
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getType(Uri uri) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Uri insert(Uri uri, ContentValues values) {
+        return null;
+    }
+
+    @Override
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
+        return 0;
+    }
+
+    @Override
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        return 0;
+    }
+
+    public static interface DocumentLoadedCallback {
+        void onDocumentLoaded();
     }
 
 }

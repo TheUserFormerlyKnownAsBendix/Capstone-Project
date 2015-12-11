@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import at.dingbat.apiutils.ApiUtil;
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.EditorAdapter;
 import at.dingbat.type.model.Document;
@@ -115,7 +116,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                doc.save(new Document.DocumentSavedCallback() {
+                doc.save(new ApiUtil.DocumentSavedCallback() {
                     @Override
                     public void onSaved() {
 
@@ -151,7 +152,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     protected void onStop() {
-        doc.save(new Document.DocumentSavedCallback() {
+        doc.save(new ApiUtil.DocumentSavedCallback() {
             @Override
             public void onSaved() {
                 Toast.makeText(EditorActivity.this, "Document saved!", Toast.LENGTH_SHORT).show();

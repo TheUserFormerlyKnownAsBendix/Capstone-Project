@@ -219,8 +219,10 @@
         </RelativeLayout>
 
         <LinearLayout
+            android:id="@+id/drawer_button_settings"
             android:layout_width="match_parent"
-            android:layout_height="48dp">
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground">
             
             <ImageView
                 android:layout_width="24dp"
@@ -242,8 +244,10 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/drawer_button_info"
             android:layout_width="match_parent"
-            android:layout_height="48dp">
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground">
 
             <ImageView
                 android:layout_width="24dp"

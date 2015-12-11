@@ -1,5 +1,6 @@
-package at.dingbat.type.util;
+package at.dingbat.apiutils;
 
+import android.location.Location;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
@@ -17,6 +18,7 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.metadata.CustomPropertyKey;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
@@ -28,8 +30,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-
-import at.dingbat.type.model.Document;
 
 /**
  * Created by Max on 11/21/2015.
@@ -82,18 +82,27 @@ public class ApiUtil {
         });
     }
 
-    public static void createFile(final GoogleApiClient client, final String title, final DriveFolder folder, final FileCreatedCallback callback) {
+    public static void createFile(final GoogleApiClient client, final String title, final DriveFolder folder, final Location location, final FileCreatedCallback callback) {
         Drive.DriveApi.newDriveContents(client).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
             @Override
             public void onResult(DriveApi.DriveContentsResult result) {
-                MetadataChangeSet file = new MetadataChangeSet.Builder()
+                MetadataChangeSet file = null;
+
+                if(location != null) file = new MetadataChangeSet.Builder()
+                        .setTitle(title)
+                        .setMimeType("text/typo")
+                        .setCustomProperty(new CustomPropertyKey("lat", CustomPropertyKey.PUBLIC), String.valueOf(location.getLatitude()))
+                        .setCustomProperty(new CustomPropertyKey("lon", CustomPropertyKey.PUBLIC), String.valueOf(location.getLongitude()))
+                        .build();
+                else file = new MetadataChangeSet.Builder()
                         .setTitle(title)
                         .setMimeType("text/typo")
                         .build();
+
                 folder.createFile(client, file, result.getDriveContents()).setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
                     @Override
                     public void onResult(final DriveFolder.DriveFileResult driveFileResult) {
-                        writeFile(client, driveFileResult.getDriveFile(), DEFAULT_TEMPLATE, new Document.DocumentSavedCallback() {
+                        writeFile(client, driveFileResult.getDriveFile(), DEFAULT_TEMPLATE, new DocumentSavedCallback() {
                             @Override
                             public void onSaved() {
                                 callback.onFileCreated(driveFileResult.getDriveFile());
@@ -126,7 +135,7 @@ public class ApiUtil {
         });
     }
 
-    public static void writeFile(final GoogleApiClient client, DriveFile file, final String json, final Document.DocumentSavedCallback callback) {
+    public static void writeFile(final GoogleApiClient client, DriveFile file, final String json, final DocumentSavedCallback callback) {
         file.open(client, DriveFile.MODE_READ_WRITE, null).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
             @Override
             public void onResult(DriveApi.DriveContentsResult driveContentsResult) {
@@ -159,6 +168,19 @@ public class ApiUtil {
         });
     }
 
+    public static void getAllTypos(final GoogleApiClient client, final SearchCallback callback) {
+        Query query = new Query.Builder()
+                .addFilter(Filters.eq(SearchableField.MIME_TYPE, "text/typo"))
+                .build();
+
+        Drive.DriveApi.query(client, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                callback.onResult(metadataBufferResult);
+            }
+        });
+    }
+
     public static interface LoginCallback {
         void onLoggedIn(GoogleSignInResult result);
     }
@@ -185,6 +207,10 @@ public class ApiUtil {
 
     public static interface MetadataLoadedCallback {
         void onMetadataLoaded(DriveResource.MetadataResult result);
+    }
+
+    public static interface DocumentSavedCallback {
+        void onSaved();
     }
 
 }

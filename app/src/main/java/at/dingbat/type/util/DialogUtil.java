@@ -131,7 +131,7 @@ public class DialogUtil {
         LinearLayoutManager l = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
         r.setLayoutManager(l);
 
-        AddItemDialogAdapter a = new AddItemDialogAdapter();
+        AddItemDialogAdapter a = new AddItemDialogAdapter(dialog);
         a.add(sorted);
 
         r.setAdapter(a);

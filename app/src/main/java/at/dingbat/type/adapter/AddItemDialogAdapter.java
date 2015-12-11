@@ -1,5 +1,6 @@
 package at.dingbat.type.adapter;
 
+import android.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -18,9 +19,11 @@ import at.dingbat.type.widget.AddItemDialogListItem;
  */
 public class AddItemDialogAdapter extends RecyclerView.Adapter {
 
+    private AlertDialog dialog;
     private ArrayList<TextStyle> styles;
 
-    public AddItemDialogAdapter() {
+    public AddItemDialogAdapter(AlertDialog dialog) {
+        this.dialog = dialog;
         styles = new ArrayList<>();
     }
 
@@ -32,6 +35,7 @@ public class AddItemDialogAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ((ViewHolder)holder).item.setTextStyle(styles.get(position));
+        ((ViewHolder)holder).item.setDialog(dialog);
     }
 
     @Override

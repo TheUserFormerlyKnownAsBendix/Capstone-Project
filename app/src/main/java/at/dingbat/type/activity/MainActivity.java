@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.TypedArray;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
@@ -30,6 +31,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -37,19 +39,24 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
-import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
+import com.google.android.gms.drive.metadata.CustomPropertyKey;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 import com.squareup.picasso.Picasso;
 
+import java.util.Date;
+import java.util.Map;
+
+import at.dingbat.apiutils.ApiUtil;
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.Adapter;
 import at.dingbat.type.adapter.Section;
-import at.dingbat.type.util.ApiUtil;
 import at.dingbat.type.util.DialogUtil;
 import at.dingbat.type.widget.FileListItem;
 import at.dingbat.type.widget.FolderListItem;
@@ -66,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ImageView profile_photo;
     private TextView profile_display_name;
     private TextView profile_email;
+    private LinearLayout drawer_settings;
+    private LinearLayout drawer_info;
 
     private Toolbar search_toolbar;
     private EditText search;
@@ -80,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private LinearLayoutManager layout_manager;
     private Adapter adapter;
 
+    private Section location;
+    private Section recent;
     private Section folders;
     private Section files;
     private Section results;
@@ -98,24 +109,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         lbcm.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.hasExtra("action")) {
+                if (intent.hasExtra("action")) {
                     String action = intent.getStringExtra("action");
-                    if(action.equals("createfile")) {
-                        ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FileCreatedCallback() {
+                    if (action.equals("createfile")) {
+                        Location l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
+                        ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), l, new ApiUtil.FileCreatedCallback() {
                             @Override
                             public void onFileCreated(DriveFile file) {
-                                if(file != null) {
+                                if (file != null) {
                                     Intent i = new Intent(MainActivity.this, EditorActivity.class);
                                     i.putExtra("file", file.getDriveId().toString());
                                     startActivity(i);
                                 }
                             }
                         });
-                    } else if(action.equals("createfolder")) {
+                    } else if (action.equals("createfolder")) {
                         ApiUtil.createFolder(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FolderCreatedCallback() {
                             @Override
                             public void onFolderCreated(DriveFolder folder) {
-                                if(folder != null) reload();
+                                if (folder != null) reload();
                             }
                         });
                     }
@@ -134,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         search_toolbar = (Toolbar) findViewById(R.id.activity_main_search_toolbar);
         search = (EditText) findViewById(R.id.activity_main_search);
         search_button = (ImageButton) findViewById(R.id.activity_main_search_button);
+        drawer_settings = (LinearLayout) findViewById(R.id.drawer_button_settings);
+        drawer_info = (LinearLayout) findViewById(R.id.drawer_button_info);
 
         fab_add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,14 +172,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        drawer_settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(i);
+            }
+        });
+
         recycler = (RecyclerView) findViewById(R.id.activity_main_recycler);
         layout_manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         adapter = new Adapter(this);
 
+        location = new Section("Based on your location");
+        location.showSeparator(true);
+        recent = new Section("Recent");
+        recent.showSeparator(true);
         folders = new Section("Folders");
         files = new Section("Files");
         results = new Section("Search results");
 
+        adapter.addSection(location);
         adapter.addSection(folders);
         adapter.addSection(files);
 
@@ -216,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         googleClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
                 .addApi(Plus.API)
+                .addApi(LocationServices.API)
                 .addScope(Drive.SCOPE_FILE)
                 .addScope(Plus.SCOPE_PLUS_PROFILE)
                 .addConnectionCallbacks(this)
@@ -336,9 +364,41 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     }
                 }
 
+                adapter.addSection(location);
+                adapter.addSection(recent);
                 adapter.addSection(folders);
                 adapter.addSection(files);
                 adapter.notifySectionChanged();
+            }
+        });
+        ApiUtil.getAllTypos(googleClient, new ApiUtil.SearchCallback() {
+            @Override
+            public void onResult(DriveApi.MetadataBufferResult result) {
+                location.clear();
+
+                Location current = LocationServices.FusedLocationApi.getLastLocation(googleClient);
+
+                CustomPropertyKey lat = new CustomPropertyKey("lat", CustomPropertyKey.PUBLIC);
+                CustomPropertyKey lon = new CustomPropertyKey("lon", CustomPropertyKey.PUBLIC);
+
+                MetadataBuffer buffer = result.getMetadataBuffer();
+                for(int i = 0; i < buffer.getCount(); i++) {
+                    Metadata data = buffer.get(i);
+                    Date now = new Date();
+                    if(now.getTime() < (data.getModifiedDate().getTime() + 1000*60*60)) {
+                        recent.add(FileListItem.DataHolder.create(data));
+                    }
+                    Map<CustomPropertyKey, String> properties = data.getCustomProperties();
+                    if(properties.containsKey(lat) && properties.containsKey(lon)) {
+                        Location to = new Location("");
+                        to.setLatitude(Double.parseDouble(properties.get(lat)));
+                        to.setLongitude(Double.parseDouble(properties.get(lon)));
+                        float distance = current.distanceTo(to);
+                        if(distance < 100) {
+                            location.add(FileListItem.DataHolder.create(data));
+                        }
+                    }
+                }
             }
         });
     }

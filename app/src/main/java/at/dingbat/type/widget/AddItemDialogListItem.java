@@ -1,5 +1,6 @@
 package at.dingbat.type.widget;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -21,6 +22,7 @@ import at.dingbat.type.model.TextStyle;
 public class AddItemDialogListItem extends RelativeLayout {
 
     private TextStyle style;
+    private AlertDialog dialog;
 
     private TextView title;
     private TextView primary_text;
@@ -44,6 +46,7 @@ public class AddItemDialogListItem extends RelativeLayout {
                 i.putExtra("action", "create");
                 i.putExtra("type", style.type);
                 lbcm.sendBroadcast(i);
+                if(dialog != null) dialog.dismiss();
             }
         });
 
@@ -54,6 +57,10 @@ public class AddItemDialogListItem extends RelativeLayout {
         this.title.setText(style.title);
         this.title.setTextColor(Color.parseColor(style.color));
         this.title.setTextSize(TypedValue.COMPLEX_UNIT_SP, style.size);
+    }
+
+    public void setDialog(AlertDialog dialog) {
+        this.dialog = dialog;
     }
 
 }
