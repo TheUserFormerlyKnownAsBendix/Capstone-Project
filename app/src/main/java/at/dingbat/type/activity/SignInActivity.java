@@ -13,8 +13,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import at.dingbat.apiutils.ApiUtil;
 import at.dingbat.type.R;
-import at.dingbat.type.util.ApiUtil;
 
 
 public class SignInActivity extends AppCompatActivity {

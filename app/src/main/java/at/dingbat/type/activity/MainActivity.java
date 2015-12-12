@@ -2,11 +2,15 @@ package at.dingbat.type.activity;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.Loader;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -57,11 +61,14 @@ import at.dingbat.apiutils.ApiUtil;
 import at.dingbat.type.R;
 import at.dingbat.type.adapter.Adapter;
 import at.dingbat.type.adapter.Section;
+import at.dingbat.type.provider.PreferencesProvider;
 import at.dingbat.type.util.DialogUtil;
 import at.dingbat.type.widget.FileListItem;
 import at.dingbat.type.widget.FolderListItem;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int URL_LOADER = 0;
 
     private GoogleApiClient googleClient;
     private LocalBroadcastManager lbcm;
@@ -95,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Section files;
     private Section results;
 
+    private boolean save_location = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,7 +121,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (intent.hasExtra("action")) {
                     String action = intent.getStringExtra("action");
                     if (action.equals("createfile")) {
-                        Location l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
+                        Location l = null;
+                        if(save_location) l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
                         ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), l, new ApiUtil.FileCreatedCallback() {
                             @Override
                             public void onFileCreated(DriveFile file) {
@@ -224,13 +234,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId == EditorInfo.IME_ACTION_SEARCH) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     ApiUtil.search(googleClient, search.getText().toString(), new ApiUtil.SearchCallback() {
                         @Override
                         public void onResult(DriveApi.MetadataBufferResult result) {
                             MetadataBuffer buffer = result.getMetadataBuffer();
-                            for(int i = 0; i < buffer.getCount(); i++) {
-                                if(!buffer.get(i).isTrashed()) results.add(FileListItem.DataHolder.create(buffer.get(i)));
+                            for (int i = 0; i < buffer.getCount(); i++) {
+                                if (!buffer.get(i).isTrashed())
+                                    results.add(FileListItem.DataHolder.create(buffer.get(i)));
                             }
                         }
                     });
@@ -249,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        getLoaderManager().initLoader(URL_LOADER, null, this);
 
     }
 
@@ -467,5 +480,39 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onBackPressed() {
         if(isSearchEnabled) toggleSearch();
         else super.onBackPressed();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        switch (i) {
+            case URL_LOADER:
+                return new CursorLoader(this,
+                        PreferencesProvider.CONTENT_URI,
+                        new String[] { "NAME", "VALUE" },
+                        null, null, null);
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if(cursor != null) {
+            int name_i = cursor.getColumnIndex(PreferencesProvider.NAME);
+            int value_i = cursor.getColumnIndex(PreferencesProvider.VALUE);
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(name_i);
+                String value = cursor.getString(value_i);
+
+                if (name.equals(SettingsActivity.PREFERENCE_SAVE_LOCATION)) {
+                    save_location = value.equals("1");
+                }
+            }
+            cursor.close();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

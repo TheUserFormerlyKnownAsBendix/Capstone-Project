@@ -34,6 +34,11 @@
             android:label="@string/title_activity_browser"
             android:theme="@style/AppTheme" />
         <activity android:name=".activity.SettingsActivity"></activity>
+    
+        <provider android:name=".provider.PreferencesProvider"
+            android:authorities="at.dingbat.type.provider">
+        </provider>
+
     </application>
 
 </manifest>
