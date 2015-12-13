@@ -61,6 +61,15 @@ public class ApiUtil {
         });
     }
 
+    public static void getMetadata(GoogleApiClient client, DriveFolder folder, final MetadataLoadedCallback callback) {
+        folder.getMetadata(client).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+            @Override
+            public void onResult(DriveResource.MetadataResult metadataResult) {
+                callback.onMetadataLoaded(metadataResult);
+            }
+        });
+    }
+
     public static void getMetadata(GoogleApiClient client, DriveFile file, final MetadataLoadedCallback callback) {
         file.getMetadata(client).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
             @Override
