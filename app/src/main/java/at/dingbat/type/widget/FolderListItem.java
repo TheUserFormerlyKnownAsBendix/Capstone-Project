@@ -1,6 +1,7 @@
 package at.dingbat.type.widget;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.view.MenuInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import at.dingbat.type.R;
+import at.dingbat.type.activity.BrowserActivity;
 import at.dingbat.type.adapter.Adapter;
 
 /**
@@ -39,13 +41,6 @@ public class FolderListItem extends RelativeLayout {
         title = (TextView) findViewById(R.id.widget_folder_list_item_title);
         more = (ImageButton) findViewById(R.id.widget_folder_list_item_more);
 
-        root.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
         more.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,9 +58,18 @@ public class FolderListItem extends RelativeLayout {
 
     }
 
-    public void setDataHolder(DataHolder holder) {
+    public void setDataHolder(final DataHolder holder) {
         this.holder = holder;
         title.setText(holder.file.getTitle());
+
+        root.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getContext(), BrowserActivity.class);
+                i.putExtra("folder", holder.file.getDriveId().toString());
+                getContext().startActivity(i);
+            }
+        });
     }
 
     public static class DataHolder extends Adapter.DataHolder {

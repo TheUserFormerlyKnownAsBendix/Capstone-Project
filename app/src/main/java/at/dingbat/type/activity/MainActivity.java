@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     if (action.equals("createfile")) {
                         Location l = null;
                         if(save_location) l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
-                        ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), l, new ApiUtil.FileCreatedCallback() {
+                        ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getFolder(googleClient, DriveId.decodeFromString(intent.getStringExtra("folder"))), l, new ApiUtil.FileCreatedCallback() {
                             @Override
                             public void onFileCreated(DriveFile file) {
                                 if (file != null) {
@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             }
                         });
                     } else if (action.equals("createfolder")) {
-                        ApiUtil.createFolder(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FolderCreatedCallback() {
+                        ApiUtil.createFolder(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getFolder(googleClient, DriveId.decodeFromString(intent.getStringExtra("folder"))), new ApiUtil.FolderCreatedCallback() {
                             @Override
                             public void onFolderCreated(DriveFolder folder) {
                                 if (folder != null) reload();
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_add_file.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DialogUtil.createFileDialog(MainActivity.this).show();
+                DialogUtil.createFileDialog(MainActivity.this, Drive.DriveApi.getRootFolder(googleClient)).show();
                 revertFABAnimation();
             }
         });
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_add_folder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DialogUtil.createFolderDialog(MainActivity.this).show();
+                DialogUtil.createFolderDialog(MainActivity.this, Drive.DriveApi.getRootFolder(googleClient)).show();
                 revertFABAnimation();
             }
         });
@@ -350,14 +350,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         googleClient.connect();
     }
 
-    private DriveFolder getFolder(DriveId id) {
-        return Drive.DriveApi.getFolder(googleClient, id);
-    }
-
-    private DriveFile getFile(DriveId id) {
-        return Drive.DriveApi.getFile(googleClient, id);
-    }
-
     private void reload() {
         ApiUtil.getFolderContents(googleClient, Drive.DriveApi.getRootFolder(googleClient), new ApiUtil.FolderContentsLoadedCallback() {
             @Override
@@ -505,6 +497,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 if (name.equals(SettingsActivity.PREFERENCE_SAVE_LOCATION)) {
                     save_location = value.equals("1");
+                    Log.d("test", "Save location: "+value.equals("1"));
                 }
             }
             cursor.close();

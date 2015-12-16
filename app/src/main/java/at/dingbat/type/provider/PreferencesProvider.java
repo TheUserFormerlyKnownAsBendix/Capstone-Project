@@ -124,7 +124,7 @@ public class PreferencesProvider extends ContentProvider {
         } catch (SQLiteConstraintException e) {
             ContentValues v = new ContentValues(1);
             v.put(VALUE, values.getAsString(VALUE));
-            id = db.update(PREFERENCES_TABLE_NAME, v, NAME+" = " + uri.getPathSegments().get(1), null);
+            id = db.update(PREFERENCES_TABLE_NAME, v, NAME+" = ?", new String[] { values.getAsString(NAME) });
         }
         if(id > 0) {
             Uri u = ContentUris.withAppendedId(CONTENT_URI, id);

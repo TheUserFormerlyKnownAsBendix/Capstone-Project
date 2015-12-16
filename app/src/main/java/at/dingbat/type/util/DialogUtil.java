@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
+import com.google.android.gms.drive.DriveFolder;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,7 +33,7 @@ import at.dingbat.type.model.TextStyle;
  */
 public class DialogUtil {
 
-    public static AlertDialog createFileDialog(final Context context) {
+    public static AlertDialog createFileDialog(final Context context, final DriveFolder folder) {
         AlertDialog.Builder b = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         ViewGroup view = (ViewGroup) inflater.inflate(R.layout.dialog_create_file, null);
@@ -59,6 +61,7 @@ public class DialogUtil {
                 Intent i = new Intent("at.dingbat.type");
                 i.putExtra("action", "createfile");
                 i.putExtra("title", text.getText().toString());
+                i.putExtra("folder", folder.getDriveId().toString());
                 LocalBroadcastManager.getInstance(context).sendBroadcast(i);
                 dialog.dismiss();
             }
@@ -67,7 +70,7 @@ public class DialogUtil {
         return dialog;
     }
 
-    public static AlertDialog createFolderDialog(final Context context) {
+    public static AlertDialog createFolderDialog(final Context context, final DriveFolder folder) {
         AlertDialog.Builder b = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         ViewGroup view = (ViewGroup) inflater.inflate(R.layout.dialog_create_folder, null);
@@ -95,6 +98,7 @@ public class DialogUtil {
                 Intent i = new Intent("at.dingbat.type");
                 i.putExtra("action", "createfolder");
                 i.putExtra("title", text.getText().toString());
+                i.putExtra("folder", folder.getDriveId().toString());
                 LocalBroadcastManager.getInstance(context).sendBroadcast(i);
                 dialog.dismiss();
             }
