@@ -39,7 +39,7 @@
             android:textSize="16dp" />
 
         <TextView
-            android:id="@+id/widget_folder_list_item_modified"
+            android:id="@+id/widget_folder_list_item_child_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12dp"/>

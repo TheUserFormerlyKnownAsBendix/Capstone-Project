@@ -13,9 +13,6 @@ import android.widget.TextView;
 
 import com.google.android.gms.drive.Metadata;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import at.dingbat.type.R;
 import at.dingbat.type.activity.BrowserActivity;
 import at.dingbat.type.adapter.Adapter;
@@ -29,7 +26,7 @@ public class FolderListItem extends RelativeLayout {
 
     private LinearLayout root;
     private TextView title;
-    private TextView modified;
+    private TextView child_count;
     private ImageButton more;
 
     public FolderListItem(final Context context) {
@@ -39,6 +36,7 @@ public class FolderListItem extends RelativeLayout {
 
         root = (LinearLayout) findViewById(R.id.widget_folder_list_item_root);
         title = (TextView) findViewById(R.id.widget_folder_list_item_title);
+        child_count = (TextView) findViewById(R.id.widget_folder_list_item_child_count);
         more = (ImageButton) findViewById(R.id.widget_folder_list_item_more);
 
         more.setOnClickListener(new OnClickListener() {
@@ -61,6 +59,7 @@ public class FolderListItem extends RelativeLayout {
     public void setDataHolder(final DataHolder holder) {
         this.holder = holder;
         title.setText(holder.file.getTitle());
+        child_count.setText(holder.childCount + (holder.childCount == 0 ? " Item" : " Items"));
 
         root.setOnClickListener(new OnClickListener() {
             @Override
@@ -74,9 +73,11 @@ public class FolderListItem extends RelativeLayout {
 
     public static class DataHolder extends Adapter.DataHolder {
         public Metadata file;
-        public static DataHolder create(Metadata file) {
+        public int childCount;
+        public static DataHolder create(Metadata file, int childCount) {
             DataHolder holder = new DataHolder();
             holder.file = file;
+            holder.childCount = childCount;
             return holder;
         }
     }

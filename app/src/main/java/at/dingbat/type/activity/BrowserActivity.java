@@ -18,6 +18,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFile;
@@ -186,7 +187,15 @@ public class BrowserActivity extends AppCompatActivity implements GoogleApiClien
                     if(!buffer.get(i).isTrashed()) {
                         if (!buffer.get(i).isFolder())
                             files.add(FileListItem.DataHolder.create(buffer.get(i)));
-                        else folders.add(FolderListItem.DataHolder.create(buffer.get(i)));
+                        else {
+                            final Metadata meta = buffer.get(i);
+                            Drive.DriveApi.getFolder(googleClient, buffer.get(i).getDriveId()).listChildren(googleClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                                @Override
+                                public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                                    folders.add(FolderListItem.DataHolder.create(meta, metadataBufferResult.getMetadataBuffer().getCount()));
+                                }
+                            });
+                        }
                     }
                 }
 

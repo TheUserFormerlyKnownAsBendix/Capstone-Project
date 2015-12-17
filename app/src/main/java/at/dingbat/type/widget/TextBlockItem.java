@@ -67,6 +67,20 @@ public class TextBlockItem extends RelativeLayout implements Editable {
                     setEditable(true);
                 } else if(action.equals("exiteditmode")) {
                     setEditable(false);
+                } else if(action.equals("entereditmodeimminent")) {
+                    if(!editable) {
+                        editable = true;
+                        Log.d("test", "Entering edit mode!");
+                        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controls_container.getLayoutParams();
+                        params.width = (int) (getResources().getDimension(R.dimen.list_item_primary_control_width));
+                        params.height = (int) (getResources().getDimension(R.dimen.list_item_primary_control_width));
+                        controls_container.setLayoutParams(params);
+                        controls.setAlpha(1);
+                        controls.setScaleX(1);
+                        controls.setScaleY(1);
+                        edit.setVisibility(VISIBLE);
+                        text.setVisibility(GONE);
+                    }
                 }
             }
         }, new IntentFilter("at.dingbat.type"));

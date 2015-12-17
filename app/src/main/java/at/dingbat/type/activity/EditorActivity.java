@@ -9,6 +9,8 @@ import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
@@ -16,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,7 +55,9 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     private LinearLayoutManager layout_manager;
     private EditorAdapter adapter;
 
+    private AppBarLayout abl;
     private CollapsingToolbarLayout ctl;
+    private int offset = 0;
 
     private boolean editable = false;
 
@@ -60,6 +65,8 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
     private GoogleApiClient googleClient;
     private Document doc;
+
+    private boolean loaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +80,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
         fab_add = (FloatingActionButton) findViewById(R.id.activity_editor_add);
 
+        abl = (AppBarLayout) findViewById(R.id.activity_editor_appbar_layout);
         ctl = (CollapsingToolbarLayout) findViewById(R.id.activity_editor_collapsing_toolbar_layout);
 
         recycler = (RecyclerView) findViewById(R.id.activity_editor_recycler);
@@ -81,6 +89,13 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
         recycler.setLayoutManager(layout_manager);
         recycler.setAdapter(adapter);
+
+        abl.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                offset = verticalOffset;
+            }
+        });
 
         lbcm = LocalBroadcastManager.getInstance(this);
 
@@ -104,6 +119,50 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                 }
             }
         }, new IntentFilter("at.dingbat.type"));
+
+        if(savedInstanceState != null) {
+            editable = savedInstanceState.getBoolean("editable");
+            Drawable d = null;
+            if(editable) d = getResources().getDrawable(R.drawable.ic_add_white_24dp);
+            else d = getResources().getDrawable(R.drawable.ic_mode_edit_white_24dp);
+
+            fab_add.setImageDrawable(d);
+
+            final int first = savedInstanceState.getInt("first");
+
+            abl.setExpanded(savedInstanceState.getBoolean("expanded"));
+
+            recycler.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+                @Override
+                public void onChildViewAttachedToWindow(View view) {
+                    recycler.scrollToPosition(first);
+                    recycler.removeOnChildAttachStateChangeListener(this);
+                }
+
+                @Override
+                public void onChildViewDetachedFromWindow(View view) {
+
+                }
+            });
+        }
+
+        Log.d("test", "Editable: "+editable);
+
+        recycler.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(View view) {
+                if(editable) {
+                    Intent i = new Intent("at.dingbat.type");
+                    i.putExtra("action", "entereditmodeimminent");
+                    lbcm.sendBroadcast(i);
+                }
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(View view) {
+
+            }
+        });
 
         googleClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
@@ -141,6 +200,8 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
         this.editable = editable;
         adapter.editable(editable);
+
+        Log.d("test", "Setting editable to " + editable);
     }
 
     @Override
@@ -163,6 +224,13 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d("", "Resuming!");
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -180,31 +248,35 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
     @Override
     public void onConnected(Bundle bundle) {
-        DriveId id = DriveId.decodeFromString(getIntent().getStringExtra("file"));
-        DriveFile file = Drive.DriveApi.getFile(googleClient, id);
+        if(!loaded) {
+            DriveId id = DriveId.decodeFromString(getIntent().getStringExtra("file"));
+            DriveFile file = Drive.DriveApi.getFile(googleClient, id);
 
-        doc = new Document(googleClient);
+            doc = new Document(googleClient);
 
-        doc.setOnDocumentLoadedListener(new Document.DocumentLoadedCallback() {
-            @Override
-            public void onDocumentLoaded() {
-                adapter.add(doc.getHolders());
+            doc.setOnDocumentLoadedListener(new Document.DocumentLoadedCallback() {
+                @Override
+                public void onDocumentLoaded() {
+                    loaded = true;
 
-                getSupportActionBar().setTitle(doc.getTitle());
+                    adapter.add(doc.getHolders());
 
-                fab_add.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (!editable) setEditable(true);
-                        else {
-                            DialogUtil.createAddTextBlockItemDialog(EditorActivity.this, doc.getMaster()).show();
+                    getSupportActionBar().setTitle(doc.getTitle());
+
+                    fab_add.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!editable) setEditable(true);
+                            else {
+                                DialogUtil.createAddTextBlockItemDialog(EditorActivity.this, doc.getMaster()).show();
+                            }
                         }
-                    }
-                });
-            }
-        });
+                    });
+                }
+            });
 
-        doc.load(file);
+            doc.load(file);
+        }
     }
 
     @Override
@@ -215,6 +287,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         if(connectionResult.hasResolution()) {
+        ctl = (CollapsingToolbarLayout) findViewById(R.id.activity_editor_collapsing_toolbar_layout);
             try {
                 connectionResult.startResolutionForResult(this, 9002);
             } catch (Exception e) {
@@ -233,6 +306,16 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                 }
                 break;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        Log.d("test", "Saving editable: " + editable);
+        outState.putBoolean("editable", editable);
+        outState.putInt("first", layout_manager.findFirstCompletelyVisibleItemPosition());
+        outState.putBoolean("expanded", offset == 0);
     }
 
 }

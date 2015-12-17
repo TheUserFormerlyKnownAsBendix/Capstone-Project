@@ -1,5 +1,7 @@
 package at.dingbat.type.adapter;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 import at.dingbat.type.widget.SeparatorListItem;

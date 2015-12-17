@@ -41,6 +41,7 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFile;
@@ -347,7 +348,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStart() {
         super.onStart();
 
-        googleClient.connect();
+        if(googleClient.isConnected()) reload();
+        else googleClient.connect();
     }
 
     private void reload() {
@@ -360,12 +362,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 files.clear();
                 folders.clear();
+                location.clear();
+                recent.clear();
 
                 for (int i = 0; i < buffer.getCount(); i++) {
                     if(!buffer.get(i).isTrashed()) {
                         if (!buffer.get(i).isFolder())
                             files.add(FileListItem.DataHolder.create(buffer.get(i)));
-                        else folders.add(FolderListItem.DataHolder.create(buffer.get(i)));
+                        else {
+                            final Metadata meta = buffer.get(i);
+                            Drive.DriveApi.getFolder(googleClient, buffer.get(i).getDriveId()).listChildren(googleClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                                @Override
+                                public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                                    folders.add(FolderListItem.DataHolder.create(meta, metadataBufferResult.getMetadataBuffer().getCount()));
+                                }
+                            });
+                        }
                     }
                 }
 
@@ -464,6 +476,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             case R.id.action_search:
                 toggleSearch();
                 return true;
+            case R.id.action_refresh:
+                reload();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -497,7 +512,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 if (name.equals(SettingsActivity.PREFERENCE_SAVE_LOCATION)) {
                     save_location = value.equals("1");
-                    Log.d("test", "Save location: "+value.equals("1"));
                 }
             }
             cursor.close();
