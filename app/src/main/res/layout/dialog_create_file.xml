@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20dp"
-        android:text="New File"
+        android:text="@string/new_file"
         android:textColor="@color/black"
         android:layout_marginLeft="24dp"
         android:layout_marginTop="24dp"/>
@@ -27,7 +27,7 @@
             android:id="@+id/dialog_create_file_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Untitled file"
+            android:text="@string/default_title_file"
             android:selectAllOnFocus="true" />
 
     </android.support.design.widget.TextInputLayout>
@@ -43,7 +43,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="CANCEL"
+            android:text="@string/cancel"
+            android:textAllCaps="true"
             android:elevation="2dp"
             android:textColor="?attr/colorPrimary"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
@@ -55,7 +56,8 @@
             android:padding="4dp"
             android:layout_marginBottom="8dp"
             android:layout_marginRight="8dp"
-            android:text="OK"
+            android:text="@string/ok"
+            android:textAllCaps="true"
             android:elevation="2dp"
             android:textColor="?attr/colorPrimary"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>

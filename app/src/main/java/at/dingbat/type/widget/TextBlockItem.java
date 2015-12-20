@@ -12,7 +12,7 @@ import android.support.v7.widget.CardView;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.KeyEvent;
+import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
@@ -25,6 +25,7 @@ import at.dingbat.type.R;
 import at.dingbat.type.adapter.Adapter;
 import at.dingbat.type.model.TextBlock;
 import at.dingbat.type.model.TextStyle;
+import at.dingbat.type.util.DialogUtil;
 
 /**
  * Created by Max on 11/24/2015.
@@ -45,7 +46,7 @@ public class TextBlockItem extends RelativeLayout implements Editable {
 
     private LocalBroadcastManager lbcm;
 
-    public TextBlockItem(Context context) {
+    public TextBlockItem(final Context context) {
         super(context);
         inflate(context, R.layout.widget_text_block_item, this);
 
@@ -70,7 +71,6 @@ public class TextBlockItem extends RelativeLayout implements Editable {
                 } else if(action.equals("entereditmodeimminent")) {
                     if(!editable) {
                         editable = true;
-                        Log.d("test", "Entering edit mode!");
                         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controls_container.getLayoutParams();
                         params.width = (int) (getResources().getDimension(R.dimen.list_item_primary_control_width));
                         params.height = (int) (getResources().getDimension(R.dimen.list_item_primary_control_width));
@@ -105,6 +105,34 @@ public class TextBlockItem extends RelativeLayout implements Editable {
                 lbcm.sendBroadcast(i);
             }
         });
+
+        controls.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DialogUtil.createEditStyleDialog(context, block.style, new DialogUtil.StyleChangedCallback() {
+                    @Override
+                    public void styleChanged(TextStyle style) {
+                        block.style = style;
+                        setTextStyle(style);
+
+                        Intent i = new Intent("at.dingbat.type");
+                        i.putExtra("action", "patchstyle");
+                        i.putExtra("uuid", block.UUID);
+                        i.putExtra("style", style.renderJSON().toString());
+                        LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+                    }
+                }, new DialogUtil.TextBlockRemovedCallback() {
+                    @Override
+                    public void removed() {
+                        Intent i = new Intent("at.dingbat.type");
+                        i.putExtra("action", "remove");
+                        i.putExtra("uuid", block.UUID);
+                        LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+                    }
+                }).show();
+            }
+        });
+
     }
 
     public void setEditable(final boolean editable) {
@@ -243,19 +271,22 @@ public class TextBlockItem extends RelativeLayout implements Editable {
         setEditable(false);
     }
 
+    public void setTextStyle(TextStyle style) {
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, style.size);
+        text.setTextColor(Color.parseColor(style.color));
+        text.setPadding((int) (getResources().getDimension(R.dimen.margin) * style.indentation), 0, 0, 0);
+
+        edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, style.size);
+        edit.setTextColor(Color.parseColor(style.color));
+        edit.setPadding((int) (getResources().getDimension(R.dimen.margin) * style.indentation), 0, 0, 0);
+    }
+
     public void setDataHolder(DataHolder holder) {
         this.block = holder.block;
         try {
             edit.setText(holder.block.content);
             text.setText(holder.block.content);
-
-            text.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
-            text.setTextColor(Color.parseColor(holder.block.style.color));
-            text.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
-
-            edit.setTextSize(TypedValue.COMPLEX_UNIT_SP, holder.block.style.size);
-            edit.setTextColor(Color.parseColor(holder.block.style.color));
-            edit.setPadding((int) (getResources().getDimension(R.dimen.margin) * holder.block.style.indentation), 0, 0, 0);
+            setTextStyle(holder.block.style);
         } catch(Exception e) {
             e.printStackTrace();
         }

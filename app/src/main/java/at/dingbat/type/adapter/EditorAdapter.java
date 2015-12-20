@@ -52,7 +52,7 @@ public class EditorAdapter extends RecyclerView.Adapter<EditorAdapter.ViewHolder
 
     public void add(Adapter.DataHolder holder) {
         this.holders.add(holder);
-        this.notifyItemInserted(this.holders.size()-1);
+        this.notifyItemInserted(this.holders.size() - 1);
     }
 
     public void add(ArrayList<Adapter.DataHolder> holders) {
@@ -60,6 +60,21 @@ public class EditorAdapter extends RecyclerView.Adapter<EditorAdapter.ViewHolder
         int end = start+holders.size();
         this.holders.addAll(holders);
         notifyItemRangeInserted(start, end);
+    }
+
+    public void remove(String uuid) {
+        Adapter.DataHolder holder = null;
+        for(Adapter.DataHolder h: holders) {
+            if(h instanceof TextBlockItem.DataHolder && ((TextBlockItem.DataHolder) h).block.UUID.equals(uuid)) {
+                holder = h;
+                break;
+            }
+        }
+        if(holder != null) {
+            int i = holders.indexOf(holder);
+            holders.remove(holder);
+            notifyItemRemoved(i);
+        }
     }
 
     public void editable(boolean isEditable) {

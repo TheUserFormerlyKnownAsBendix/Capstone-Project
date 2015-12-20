@@ -20,6 +20,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -64,7 +66,9 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     private LocalBroadcastManager lbcm;
 
     private GoogleApiClient googleClient;
+    private DriveFile file;
     private Document doc;
+    private String title;
 
     private boolean loaded = false;
 
@@ -103,19 +107,27 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getStringExtra("action");
-                if(action.equals("create")) {
+                if (action.equals("create")) {
                     TextBlock block = new TextBlock();
                     block.UUID = UUID.randomUUID().toString();
-                    if(intent.hasExtra("type")) block.type = intent.getStringExtra("type");
+                    if (intent.hasExtra("type")) block.type = intent.getStringExtra("type");
                     else block.type = "default";
                     block.style = doc.getTextStyle(block.type);
-                    block.content = "";
+                    block.content = block.style.title;
                     doc.addTextBlock(block);
                     adapter.add(TextBlockItem.DataHolder.create(block));
-                } else if(action.equals("patch")) {
+                } else if (action.equals("patch")) {
                     String uuid = intent.getStringExtra("uuid");
                     String content = intent.getStringExtra("content");
                     doc.patchTextBlock(uuid, content);
+                } else if (action.equals("patchstyle")) {
+                    String uuid = intent.getStringExtra("uuid");
+                    String style = intent.getStringExtra("style");
+                    doc.patchTextStyle(uuid, style);
+                } else if (action.equals("remove")) {
+                    String uuid = intent.getStringExtra("uuid");
+                    doc.removeTextBlock(uuid);
+                    adapter.remove(uuid);
                 }
             }
         }, new IntentFilter("at.dingbat.type"));
@@ -145,8 +157,6 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                 }
             });
         }
-
-        Log.d("test", "Editable: "+editable);
 
         recycler.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
@@ -200,8 +210,6 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
         this.editable = editable;
         adapter.editable(editable);
-
-        Log.d("test", "Setting editable to " + editable);
     }
 
     @Override
@@ -216,28 +224,11 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         doc.save(new ApiUtil.DocumentSavedCallback() {
             @Override
             public void onSaved() {
-                Toast.makeText(EditorActivity.this, "Document saved!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditorActivity.this, R.string.document_saved, Toast.LENGTH_SHORT).show();
             }
         });
 
         super.onStop();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        Log.d("", "Resuming!");
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -250,7 +241,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     public void onConnected(Bundle bundle) {
         if(!loaded) {
             DriveId id = DriveId.decodeFromString(getIntent().getStringExtra("file"));
-            DriveFile file = Drive.DriveApi.getFile(googleClient, id);
+            file = Drive.DriveApi.getFile(googleClient, id);
 
             doc = new Document(googleClient);
 
@@ -261,7 +252,9 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
 
                     adapter.add(doc.getHolders());
 
-                    getSupportActionBar().setTitle(doc.getTitle());
+                    title = doc.getTitle();
+
+                    getSupportActionBar().setTitle(title);
 
                     fab_add.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -275,7 +268,7 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
                 }
             });
 
-            doc.load(file);
+            doc.load(this, file);
         }
     }
 
@@ -287,7 +280,6 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         if(connectionResult.hasResolution()) {
-        ctl = (CollapsingToolbarLayout) findViewById(R.id.activity_editor_collapsing_toolbar_layout);
             try {
                 connectionResult.startResolutionForResult(this, 9002);
             } catch (Exception e) {
@@ -295,6 +287,37 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
         } else {
             GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this, 0).show();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_editor, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_rename:
+                DialogUtil.createRenameFileDialog(this, file, title, new DialogUtil.RenamedCallback() {
+                    @Override
+                    public void renamed(String title) {
+                        EditorActivity.this.title = title;
+                        ctl.setTitle(title);
+                    }
+                }).show();
+                return true;
+            case R.id.action_details:
+                Intent i = new Intent(this, DetailActivity.class);
+                i.putExtra("file", file.getDriveId().toString());
+                startActivity(i);
+                return true;
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -312,7 +335,6 @@ public class EditorActivity extends AppCompatActivity implements GoogleApiClient
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        Log.d("test", "Saving editable: " + editable);
         outState.putBoolean("editable", editable);
         outState.putInt("first", layout_manager.findFirstCompletelyVisibleItemPosition());
         outState.putBoolean("expanded", offset == 0);

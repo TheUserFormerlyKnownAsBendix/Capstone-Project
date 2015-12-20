@@ -2,10 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="at.dingbat.type">
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -33,12 +38,35 @@
             android:name=".activity.BrowserActivity"
             android:label="@string/title_activity_browser"
             android:theme="@style/AppTheme" />
-        <activity android:name=".activity.SettingsActivity"></activity>
-    
-        <provider android:name=".provider.PreferencesProvider"
-            android:authorities="at.dingbat.type.provider">
-        </provider>
+        <activity android:name=".activity.SettingsActivity" />
 
+        <provider
+            android:name=".provider.PreferencesProvider"
+            android:authorities="at.dingbat.type.provider" />
+
+        <receiver
+            android:name=".widget.WidgetProvider"
+            android:icon="@mipmap/ic_launcher"
+            android:label="Quick access">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+
+        <activity android:name=".activity.DetailActivity" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC8WlBmHNjDp8TpHlnVEtivCvjc3x3LRe4" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity android:name=".activity.CreditsActivity"></activity>
     </application>
 
 </manifest>

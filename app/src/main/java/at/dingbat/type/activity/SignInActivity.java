@@ -46,11 +46,10 @@ public class SignInActivity extends AppCompatActivity {
             public void onLoggedIn(GoogleSignInResult result) {
                 if(result.isSuccess()) {
                     GoogleSignInAccount account = result.getSignInAccount();
-                    Log.d("test", "Signed in as " + account.getDisplayName());
 
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
                     startActivity(i);
-                } else Log.e("test", "Failed to sign in");
+                } else Log.e(SignInActivity.class.getCanonicalName(), getString(R.string.login_failed));
             }
         };
 

@@ -78,8 +78,8 @@ public class BrowserActivity extends AppCompatActivity implements GoogleApiClien
         fab_add_file = (FloatingActionButton) findViewById(R.id.activity_browser_add_file);
         fab_add_folder = (FloatingActionButton) findViewById(R.id.activity_browser_add_folder);
 
-        folders = new Section("Folders");
-        files = new Section("Files");
+        folders = new Section(getString(R.string.folders));
+        files = new Section(getString(R.string.files));
 
         recycler.setLayoutManager(layout_manager);
         recycler.setAdapter(adapter);

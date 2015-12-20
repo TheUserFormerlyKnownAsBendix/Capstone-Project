@@ -4,8 +4,10 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Gravity;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -22,13 +24,17 @@ import java.util.Date;
 
 import at.dingbat.type.BuildConfig;
 import at.dingbat.type.R;
+import at.dingbat.type.activity.DetailActivity;
 import at.dingbat.type.activity.EditorActivity;
 import at.dingbat.type.adapter.Adapter;
+import at.dingbat.type.model.Document;
 
 /**
  * Created by Max on 11/21/2015.
  */
 public class FileListItem extends RelativeLayout {
+
+    private Context context;
 
     private DataHolder holder;
 
@@ -39,6 +45,8 @@ public class FileListItem extends RelativeLayout {
 
     public FileListItem(final Context context) {
         super(context);
+
+        this.context = context;
 
         inflate(context, R.layout.widget_file_list_item, this);
 
@@ -68,6 +76,25 @@ public class FileListItem extends RelativeLayout {
                 MenuInflater inflater = menu.getMenuInflater();
                 inflater.inflate(R.menu.widget_file_list_item_menu, menu.getMenu());
                 menu.show();
+                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            case R.id.widget_file_list_item_menu_details:
+                                Intent i = new Intent(context, DetailActivity.class);
+                                i.putExtra("file", holder.file.getDriveId().toString());
+                                context.startActivity(i);
+                                return true;
+                            case R.id.widget_file_list_item_menu_delete:
+                                Intent i2 = new Intent("at.dingbat.type");
+                                i2.putExtra("action", "deletefile");
+                                i2.putExtra("file", holder.file.getDriveId().toString());
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(i2);
+                                return true;
+                        }
+                        return false;
+                    }
+                });
             }
         });
 
@@ -77,33 +104,7 @@ public class FileListItem extends RelativeLayout {
         this.holder = holder;
         title.setText(holder.file.getTitle());
 
-        Date date = new Date();
-        long diff = date.getTime() - holder.file.getModifiedDate().getTime();
-        // Less than one minute ago
-        if(diff < (1000*60)) {
-            modified.setText("Now");
-        }
-        // Less than an hour ago
-        else if(diff < (1000*60*60)) {
-            modified.setText(Math.round(diff/(1000*60))+" minutes ago");
-        }
-        // Less than two hours ago
-        else if(diff < (1000*60*60*2)) {
-            modified.setText("1 hour ago");
-        }
-        // Less than a day ago
-        else if(diff < (1000*60*60*24)) {
-            modified.setText(Math.round(diff / (1000 * 60 * 60)) + " hours ago");
-        }
-        // Less than two days ago
-        else if(diff < (1000*60*60*24*2)) {
-            modified.setText("Yesterday");
-        }
-        // More than two days ago - show date
-        else {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyy/MM/dd");
-            modified.setText(sdf.format(holder.file.getModifiedDate()));
-        }
+        modified.setText(Document.formatDate(context, holder.file.getModifiedDate()));
     }
 
     public static class DataHolder extends Adapter.DataHolder {

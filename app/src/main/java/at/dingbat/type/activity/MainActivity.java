@@ -37,6 +37,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -123,7 +124,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     String action = intent.getStringExtra("action");
                     if (action.equals("createfile")) {
                         Location l = null;
-                        if(save_location) l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
+                        if (save_location)
+                            l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
                         ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getFolder(googleClient, DriveId.decodeFromString(intent.getStringExtra("folder"))), l, new ApiUtil.FileCreatedCallback() {
                             @Override
                             public void onFileCreated(DriveFile file) {
@@ -139,6 +141,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             @Override
                             public void onFolderCreated(DriveFolder folder) {
                                 if (folder != null) reload();
+                            }
+                        });
+                    } else if (action.equals("renamefile")) {
+                        ApiUtil.renameFile(googleClient, Drive.DriveApi.getFile(googleClient, DriveId.decodeFromString(intent.getStringExtra("file"))), intent.getStringExtra("title"));
+                    } else if (action.equals("deletefile")) {
+                        ApiUtil.delete(googleClient, intent.getStringExtra("file"), new ApiUtil.DeletedCallback() {
+                            @Override
+                            public void onDeleted() {
+                                Toast.makeText(MainActivity.this, R.string.file_deleted, Toast.LENGTH_SHORT).show();
+                                reload();
+                            }
+                        });
+                    } else if (action.equals("deletefolder")) {
+                        ApiUtil.delete(googleClient, intent.getStringExtra("folder"), new ApiUtil.DeletedCallback() {
+                            @Override
+                            public void onDeleted() {
+                                Toast.makeText(MainActivity.this, R.string.folder_deleted, Toast.LENGTH_SHORT).show();
+                                reload();
                             }
                         });
                     }
@@ -191,17 +211,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        drawer_info.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this, CreditsActivity.class);
+                startActivity(i);
+            }
+        });
+
         recycler = (RecyclerView) findViewById(R.id.activity_main_recycler);
         layout_manager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         adapter = new Adapter(this);
 
-        location = new Section("Based on your location");
+        location = new Section(getString(R.string.based_on_your_location));
         location.showSeparator(true);
-        recent = new Section("Recent");
+        recent = new Section(getString(R.string.recent));
         recent.showSeparator(true);
-        folders = new Section("Folders");
-        files = new Section("Files");
-        results = new Section("Search results");
+        folders = new Section(getString(R.string.folders));
+        files = new Section(getString(R.string.files));
+        results = new Section(getString(R.string.search_results));
 
         adapter.addSection(location);
         adapter.addSection(folders);
@@ -348,7 +376,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStart() {
         super.onStart();
 
-        if(googleClient.isConnected()) reload();
+        if(googleClient.isConnected()) {
+            if(!isSearchEnabled) reload();
+        }
         else googleClient.connect();
     }
 
@@ -431,7 +461,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             profile_display_name.setText(current.getDisplayName());
             profile_email.setText(Plus.AccountApi.getAccountName(googleClient));
-        } else Log.e("test", "Account is null");
+        } else {
+            Log.e(MainActivity.class.getCanonicalName(), "Account is null");
+            Toast.makeText(this, R.string.login_failed, Toast.LENGTH_SHORT);
+        }
     }
 
     @Override

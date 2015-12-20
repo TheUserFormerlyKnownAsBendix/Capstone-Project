@@ -3,7 +3,9 @@ package at.dingbat.type.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -15,6 +17,7 @@ import com.google.android.gms.drive.Metadata;
 
 import at.dingbat.type.R;
 import at.dingbat.type.activity.BrowserActivity;
+import at.dingbat.type.activity.DetailActivity;
 import at.dingbat.type.adapter.Adapter;
 
 /**
@@ -49,8 +52,22 @@ public class FolderListItem extends RelativeLayout {
                     menu = new PopupMenu(context, more);
                 }
                 MenuInflater inflater = menu.getMenuInflater();
-                inflater.inflate(R.menu.widget_file_list_item_menu, menu.getMenu());
+                inflater.inflate(R.menu.widget_folder_list_item_menu, menu.getMenu());
                 menu.show();
+                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        switch (menuItem.getItemId()) {
+                            case R.id.widget_folder_list_item_menu_delete:
+                                Intent i = new Intent("at.dingbat.type");
+                                i.putExtra("action", "deletefolder");
+                                i.putExtra("folder", holder.file.getDriveId().toString());
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+                                return true;
+                        }
+                        return false;
+                    }
+                });
             }
         });
 

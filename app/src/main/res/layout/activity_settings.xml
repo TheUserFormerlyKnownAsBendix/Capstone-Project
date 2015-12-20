@@ -75,13 +75,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Save location data"
+                            android:text="@string/save_location_data"
                             android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Automatically save location data to provide location based quick access to documents"
+                            android:text="@string/settings_location_description"
                             android:textAppearance="@style/TextAppearance.AppCompat.Caption"/>
 
                     </LinearLayout>

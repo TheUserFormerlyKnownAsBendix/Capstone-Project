@@ -34,7 +34,7 @@ public class SettingsActivity extends AppCompatActivity implements LoaderManager
         Toolbar toolbar = (Toolbar) findViewById(R.id.activity_settings_toolbar);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setTitle("Settings");
+        getSupportActionBar().setTitle(R.string.settings);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         save_location = (AppCompatCheckBox) findViewById(R.id.activity_settings_location_data);

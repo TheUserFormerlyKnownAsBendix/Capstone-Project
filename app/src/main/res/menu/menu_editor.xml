@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".activity.EditorActivity">
+    <item android:id="@+id/action_rename" android:title="Rename"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_details" android:title="Details"
+        android:orderInCategory="100" app:showAsAction="never" />
+</menu>

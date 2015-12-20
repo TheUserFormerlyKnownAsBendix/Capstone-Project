@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="at.dingbat.type.activity.CreditsActivity"
+    android:background="?attr/colorPrimary">
+
+    <ImageView
+        android:id="@+id/activity_credits_icon"
+        android:layout_width="@dimen/credits_icon_size"
+        android:layout_height="@dimen/credits_icon_size"
+        android:layout_centerInParent="true"
+        android:src="@drawable/web_hi_res_512"/>
+
+    <TextView
+        android:id="@+id/activity_credits_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/activity_credits_icon"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="@color/white"
+        android:text="@string/version"/>
+
+    <TextView
+        android:id="@+id/activity_credits_developer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/activity_credits_version"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textColor="@color/white"
+        android:text="@string/developer"/>
+
+
+    <TextView
+        android:id="@+id/activity_credits_aaa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:layout_below="@id/activity_credits_developer"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/white"
+        android:text="@string/credits_aaa"/>
+
+</RelativeLayout>
