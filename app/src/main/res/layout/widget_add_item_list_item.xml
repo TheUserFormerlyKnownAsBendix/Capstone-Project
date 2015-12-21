@@ -28,8 +28,8 @@
             android:layout_width="@dimen/list_item_primary_control_image"
             android:layout_height="@dimen/list_item_primary_control_image"
             android:layout_gravity="center"
-            android:src="@drawable/ic_description_white_24dp"
-            android:visibility="gone"/>
+            android:src="@drawable/ic_text_format_white_24dp"
+            android:contentDescription="@string/text_format"/>
 
     </android.support.v7.widget.CardView>
 

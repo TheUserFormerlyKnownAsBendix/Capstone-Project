@@ -13,58 +13,45 @@
         android:layout_marginLeft="24dp"
         android:layout_marginTop="24dp"/>
 
-
-    <LinearLayout
+    <Button
         android:id="@+id/dialog_edit_style_increase_indent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:drawableLeft="@drawable/ic_format_indent_increase_black_24dp"
+        android:drawablePadding="@dimen/margin"
         android:background="?attr/selectableItemBackground"
-        android:paddingTop="@dimen/margin">
+        android:contentDescription="@string/increase_indent"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:text="@string/increase_indent"
+        android:textStyle="normal"
+        android:textAllCaps="false"
+        android:textAlignment="viewStart"
+        android:layout_gravity="start"
+        android:nextFocusDown="@+id/dialog_edit_style_decrease_indent"/>
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:layout_marginLeft="24dp"
-            android:layout_marginRight="24dp"
-            android:src="@drawable/ic_format_indent_increase_black_24dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/increase_indent"
-            android:textSize="18sp"
-            android:textColor="@color/black"/>
-
-    </LinearLayout>
-
-    <LinearLayout
+    <Button
         android:id="@+id/dialog_edit_style_decrease_indent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:drawableLeft="@drawable/ic_format_indent_decrease_black_24dp"
+        android:drawablePadding="@dimen/margin"
         android:background="?attr/selectableItemBackground"
-        android:paddingTop="@dimen/margin">
+        android:contentDescription="@string/decrease_indent"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:text="@string/decrease_indent"
+        android:textStyle="normal"
+        android:textAllCaps="false"
+        android:textAlignment="viewStart"
+        android:layout_gravity="start"
+        android:nextFocusUp="@+id/dialog_edit_style_increase_indent"
+        android:nextFocusDown="@+id/dialog_edit_style_radio_black"/>
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:layout_marginLeft="24dp"
-            android:layout_marginRight="24dp"
-            android:src="@drawable/ic_format_indent_decrease_black_24dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/decrease_indent"
-            android:textSize="18sp"
-            android:textColor="@color/black"/>
-
-    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -94,7 +81,10 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:button="@drawable/radio_black"
-            android:checked="false" />
+            android:checked="false"
+            android:nextFocusUp="@+id/dialog_edit_style_decrease_indent"
+            android:nextFocusDown="@+id/dialog_edit_style_ok"
+            android:nextFocusRight="@+id/dialog_edit_style_radio_grey"/>
 
         <RadioButton
             android:id="@+id/dialog_edit_style_radio_grey"
@@ -103,7 +93,11 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:button="@drawable/radio_grey"
-            android:checked="false"/>
+            android:checked="false"
+            android:nextFocusUp="@+id/dialog_edit_style_decrease_indent"
+            android:nextFocusDown="@+id/dialog_edit_style_ok"
+            android:nextFocusLeft="@+id/dialog_edit_style_radio_black"
+            android:nextFocusRight="@+id/dialog_edit_style_radio_red"/>
 
         <RadioButton
             android:id="@+id/dialog_edit_style_radio_red"
@@ -112,7 +106,11 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:button="@drawable/radio_red"
-            android:checked="false"/>
+            android:checked="false"
+            android:nextFocusUp="@+id/dialog_edit_style_decrease_indent"
+            android:nextFocusDown="@+id/dialog_edit_style_ok"
+            android:nextFocusLeft="@+id/dialog_edit_style_radio_grey"
+            android:nextFocusRight="@+id/dialog_edit_style_radio_amber"/>
 
         <RadioButton
             android:id="@+id/dialog_edit_style_radio_amber"
@@ -121,7 +119,11 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:button="@drawable/radio_amber"
-            android:checked="false"/>
+            android:checked="false"
+            android:nextFocusUp="@+id/dialog_edit_style_decrease_indent"
+            android:nextFocusDown="@+id/dialog_edit_style_ok"
+            android:nextFocusLeft="@+id/dialog_edit_style_radio_red"
+            android:nextFocusRight="@+id/dialog_edit_style_radio_green"/>
 
         <RadioButton
             android:id="@+id/dialog_edit_style_radio_green"
@@ -130,7 +132,11 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:button="@drawable/radio_green"
-            android:checked="false"/>
+            android:checked="false"
+            android:nextFocusUp="@+id/dialog_edit_style_decrease_indent"
+            android:nextFocusDown="@+id/dialog_edit_style_ok"
+            android:nextFocusLeft="@+id/dialog_edit_style_radio_amber"
+            android:nextFocusRight="@+id/dialog_edit_style_radio_blue"/>
 
         <RadioButton
             android:id="@+id/dialog_edit_style_radio_blue"
@@ -139,7 +145,10 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:button="@drawable/radio_blue"
-            android:checked="false"/>
+            android:checked="false"
+            android:nextFocusUp="@+id/dialog_edit_style_decrease_indent"
+            android:nextFocusDown="@+id/dialog_edit_style_ok"
+            android:nextFocusLeft="@+id/dialog_edit_style_radio_green"/>
 
     </RadioGroup>
 
@@ -158,7 +167,9 @@
             android:text="@string/remove"
             android:textAllCaps="true"
             android:elevation="2dp"
-            android:textColor="?attr/colorPrimary"
+            android:textColor="@color/red"
+            android:nextFocusUp="@+id/dialog_edit_style_radio_black"
+            android:nextFocusRight="@+id/dialog_edit_style_cancel"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
         <View
@@ -176,6 +187,9 @@
             android:textAllCaps="true"
             android:elevation="2dp"
             android:textColor="?attr/colorPrimary"
+            android:nextFocusUp="@+id/dialog_edit_style_radio_black"
+            android:nextFocusLeft="@+id/dialog_edit_style_remove"
+            android:nextFocusRight="@+id/dialog_edit_style_ok"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
         <android.support.v7.widget.AppCompatButton
@@ -189,6 +203,8 @@
             android:textAllCaps="true"
             android:elevation="2dp"
             android:textColor="?attr/colorPrimary"
+            android:nextFocusUp="@+id/dialog_edit_style_radio_black"
+            android:nextFocusLeft="@+id/dialog_edit_style_cancel"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
     </LinearLayout>

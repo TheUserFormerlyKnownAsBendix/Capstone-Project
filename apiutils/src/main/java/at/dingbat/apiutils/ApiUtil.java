@@ -8,6 +8,7 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
@@ -15,6 +16,7 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
@@ -22,6 +24,8 @@ import com.google.android.gms.drive.metadata.CustomPropertyKey;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.google.android.gms.drive.query.SortOrder;
+import com.google.android.gms.drive.query.SortableField;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -163,6 +167,56 @@ public class ApiUtil {
         });
     }
 
+    public static void renameFile(final GoogleApiClient client, final DriveFile file, final String title) {
+        file.getMetadata(client).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+            @Override
+            public void onResult(DriveResource.MetadataResult metadataResult) {
+                MetadataChangeSet set = new MetadataChangeSet.Builder().setTitle(title).build();
+                file.updateMetadata(client, set);
+            }
+        });
+    }
+
+    public static void addLocation(final GoogleApiClient client, final DriveFile file, final Location location) {
+        file.getMetadata(client).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+            @Override
+            public void onResult(DriveResource.MetadataResult metadataResult) {
+                MetadataChangeSet set = new MetadataChangeSet.Builder()
+                        .setCustomProperty(new CustomPropertyKey("lat", CustomPropertyKey.PUBLIC), String.valueOf(location.getLatitude()))
+                        .setCustomProperty(new CustomPropertyKey("lon", CustomPropertyKey.PUBLIC), String.valueOf(location.getLongitude()))
+                        .build();
+                file.updateMetadata(client, set);
+            }
+        });
+    }
+
+    public static void removeLocation(final GoogleApiClient client, final DriveFile file) {
+        file.getMetadata(client).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+            @Override
+            public void onResult(DriveResource.MetadataResult metadataResult) {
+                MetadataChangeSet set = new MetadataChangeSet.Builder()
+                        .deleteCustomProperty(new CustomPropertyKey("lat", CustomPropertyKey.PUBLIC))
+                        .deleteCustomProperty(new CustomPropertyKey("lon", CustomPropertyKey.PUBLIC))
+                        .build();
+                file.updateMetadata(client, set);
+            }
+        });
+    }
+
+    public static void delete(GoogleApiClient client, String id, final DeletedCallback callback) {
+        DriveId driveid = DriveId.decodeFromString(id);
+        ResultCallback c = new ResultCallback() {
+            @Override
+            public void onResult(Result result) {
+                callback.onDeleted();
+            }
+        };
+
+        if(driveid.getResourceType() == DriveId.RESOURCE_TYPE_FILE) Drive.DriveApi.getFile(client, driveid).delete(client).setResultCallback(c);
+        else Drive.DriveApi.getFolder(client, driveid).delete(client).setResultCallback(c);
+
+    }
+
     public static void search(final GoogleApiClient client, String title, final SearchCallback callback) {
         Query query = new Query.Builder()
                 .addFilter(Filters.and(
@@ -180,6 +234,7 @@ public class ApiUtil {
     public static void getAllTypos(final GoogleApiClient client, final SearchCallback callback) {
         Query query = new Query.Builder()
                 .addFilter(Filters.eq(SearchableField.MIME_TYPE, "text/typo"))
+                .setSortOrder(new SortOrder.Builder().addSortDescending(SortableField.MODIFIED_DATE).build())
                 .build();
 
         Drive.DriveApi.query(client, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -220,6 +275,10 @@ public class ApiUtil {
 
     public static interface DocumentSavedCallback {
         void onSaved();
+    }
+
+    public static interface DeletedCallback {
+        void onDeleted();
     }
 
 }

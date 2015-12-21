@@ -2,9 +2,16 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    signingConfigs {
+        release {
+            keyAlias 'Type'
+            keyPassword '_4Rz~y2ct}qBpVu-'
+            storeFile file('../keystore.jks')
+            storePassword '_4Rz~y2ct}qBpVu-'
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
-
     defaultConfig {
         applicationId "at.dingbat.type"
         minSdkVersion 16
@@ -16,6 +23,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }

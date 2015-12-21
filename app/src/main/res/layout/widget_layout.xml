@@ -17,7 +17,8 @@
         android:layout_weight="0"
         android:layout_marginRight="@dimen/margin"
         android:src="@mipmap/ic_launcher"
-        android:background="@android:color/transparent"/>
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/icon"/>
 
     <TextView
         android:id="@+id/widget_layout_message"

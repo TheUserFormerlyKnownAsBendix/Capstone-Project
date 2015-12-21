@@ -13,7 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -192,7 +194,7 @@ public class DialogUtil {
 
         ((TextView)view.findViewById(R.id.dialog_edit_style_title)).setText(style.title + " " + context.getString(R.string.properties));
 
-        ((LinearLayout)view.findViewById(R.id.dialog_edit_style_increase_indent)).setOnClickListener(new View.OnClickListener() {
+        ((Button)view.findViewById(R.id.dialog_edit_style_increase_indent)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 style.indentation = Math.min(10, style.indentation + 1);
@@ -200,7 +202,7 @@ public class DialogUtil {
             }
         });
 
-        ((LinearLayout)view.findViewById(R.id.dialog_edit_style_decrease_indent)).setOnClickListener(new View.OnClickListener() {
+        ((Button)view.findViewById(R.id.dialog_edit_style_decrease_indent)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 style.indentation = Math.max(0, style.indentation - 1);

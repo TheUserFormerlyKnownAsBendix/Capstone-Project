@@ -28,7 +28,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/default_title_file"
-            android:selectAllOnFocus="true" />
+            android:selectAllOnFocus="true"
+            android:nextFocusDown="@+id/dialog_create_file_ok"/>
 
     </android.support.design.widget.TextInputLayout>
 
@@ -47,6 +48,8 @@
             android:textAllCaps="true"
             android:elevation="2dp"
             android:textColor="?attr/colorPrimary"
+            android:nextFocusRight="@+id/dialog_create_file_ok"
+            android:nextFocusUp="@+id/dialog_create_file_input"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
         <android.support.v7.widget.AppCompatButton
@@ -60,6 +63,8 @@
             android:textAllCaps="true"
             android:elevation="2dp"
             android:textColor="?attr/colorPrimary"
+            android:nextFocusLeft="@+id/dialog_create_file_cancel"
+            android:nextFocusUp="@+id/dialog_create_file_input"
             style="@style/Base.Widget.AppCompat.Button.Borderless"/>
 
     </LinearLayout>

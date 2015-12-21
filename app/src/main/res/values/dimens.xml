@@ -24,4 +24,7 @@
 
     <dimen name="credits_icon_size">256dp</dimen>
 
+    <dimen name="fab_folder_offset">100dp</dimen>
+    <dimen name="fab_file_offset">164dp</dimen>
+
 </resources>

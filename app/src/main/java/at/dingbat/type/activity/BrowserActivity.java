@@ -134,8 +134,12 @@ public class BrowserActivity extends AppCompatActivity implements GoogleApiClien
         fab_add_folder.setX(offsetX);
         fab_add_file.setY(offsetY);
         fab_add_folder.setY(offsetY);
-        fab_add_file.animate().setDuration(300).setInterpolator(new DecelerateInterpolator()).alpha(1f).translationY(-500);
-        fab_add_folder.animate().setDuration(300).setInterpolator(new DecelerateInterpolator()).alpha(1f).translationY(-300);
+
+        int file_offset = -(int)getResources().getDimension(R.dimen.fab_file_offset);
+        int folder_offset = -(int)getResources().getDimension(R.dimen.fab_folder_offset);
+
+        fab_add_file.animate().setDuration(300).setInterpolator(new DecelerateInterpolator()).alpha(1f).translationY(/*-500*/file_offset);
+        fab_add_folder.animate().setDuration(300).setInterpolator(new DecelerateInterpolator()).alpha(1f).translationY(/*-300*/folder_offset);
     }
 
     private void revertFABAnimation() {

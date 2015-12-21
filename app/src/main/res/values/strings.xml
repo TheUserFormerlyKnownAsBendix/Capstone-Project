@@ -53,4 +53,10 @@
     <string name="version">Version 1.0</string>
     <string name="developer">by Max Theisen</string>
     <string name="credits_aaa">Some assets were created with Android Asset Studio</string>
+    <string name="file">File</string>
+    <string name="icon">Icon</string>
+    <string name="back">Back</string>
+    <string name="profile_cover">Profile Cover Image</string>
+    <string name="profile_photo">Profile Photo</string>
+    <string name="text_format">Text format</string>
 </resources>

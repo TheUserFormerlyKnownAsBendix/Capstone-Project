@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -70,7 +71,7 @@ public class DetailActivity extends AppCompatActivity implements GoogleApiClient
     private MapFragment map;
     private SwitchCompat save_location;
     private FrameLayout fragment;
-    private RelativeLayout delete;
+    private Button delete;
 
     private GoogleMap googleMap;
     private Marker marker;
@@ -93,7 +94,7 @@ public class DetailActivity extends AppCompatActivity implements GoogleApiClient
         changed = (TextView) findViewById(R.id.activity_detail_changed);
         map = (MapFragment) getFragmentManager().findFragmentById(R.id.activity_detail_map);
         save_location = (SwitchCompat) findViewById(R.id.activity_detail_save_location);
-        delete = (RelativeLayout) findViewById(R.id.activity_detail_delete);
+        delete = (Button) findViewById(R.id.activity_detail_delete);
         fragment = (FrameLayout) findViewById(R.id.activity_detail_map);
 
         path = "";
@@ -103,10 +104,11 @@ public class DetailActivity extends AppCompatActivity implements GoogleApiClient
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(b) {
                     Location l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
-                    ApiUtil.addLocation(googleClient, file, l);
-
-                    LatLng latlng = new LatLng(l.getLatitude(), l.getLongitude());
-                    setLocation(latlng);
+                    if(l != null) {
+                        ApiUtil.addLocation(googleClient, file, l);
+                        LatLng latlng = new LatLng(l.getLatitude(), l.getLongitude());
+                        setLocation(latlng);
+                    }
                 } else {
                     ApiUtil.removeLocation(googleClient, file);
                     fragment.setVisibility(View.GONE);

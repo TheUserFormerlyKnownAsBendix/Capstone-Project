@@ -45,7 +45,8 @@
                     android:layout_height="?attr/actionBarSize"
                     app:layout_collapseMode="pin"
                     android:theme="@style/ToolbarTheme"
-                    android:popupTheme="@style/AppTheme.PopupOverlay"
+                    android:popupTheme="@style/AppTheme"
+                    app:popupTheme="@style/AppTheme"
                     />
 
             </android.support.design.widget.CollapsingToolbarLayout>
@@ -90,7 +91,8 @@
                             android:adjustViewBounds="true"
                             android:src="@drawable/ic_arrow_back_black_24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:layout_margin="@dimen/margin"/>
+                            android:layout_margin="@dimen/margin"
+                            android:contentDescription="@string/back"/>
 
                         <android.support.design.widget.TextInputLayout
                             android:layout_width="match_parent"
@@ -175,7 +177,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:fitsSystemWindows="true"/>
+                android:fitsSystemWindows="true"
+                android:contentDescription="@string/profile_cover"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -194,7 +197,8 @@
                         android:id="@+id/drawer_profile_photo"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:scaleType="centerCrop"/>
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/profile_photo"/>
 
                 </android.support.v7.widget.CardView>
 
@@ -230,7 +234,8 @@
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/ic_settings_black_24dp"
                 android:layout_marginLeft="@dimen/margin"
-                android:layout_marginRight="32dp"/>
+                android:layout_marginRight="32dp"
+                android:contentDescription="@string/settings"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -255,7 +260,8 @@
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/ic_info_black_24dp"
                 android:layout_marginLeft="@dimen/margin"
-                android:layout_marginRight="32dp"/>
+                android:layout_marginRight="32dp"
+                android:contentDescription="@string/about"/>
 
             <TextView
                 android:layout_width="wrap_content"

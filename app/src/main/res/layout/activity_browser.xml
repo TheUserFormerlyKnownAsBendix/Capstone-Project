@@ -38,6 +38,7 @@
                 app:layout_collapseMode="pin"
                 android:theme="@style/ToolbarTheme"
                 android:popupTheme="@style/AppTheme"
+                app:popupTheme="@style/AppTheme"
                 />
 
         </android.support.design.widget.CollapsingToolbarLayout>

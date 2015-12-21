@@ -11,7 +11,8 @@
         android:layout_width="@dimen/credits_icon_size"
         android:layout_height="@dimen/credits_icon_size"
         android:layout_centerInParent="true"
-        android:src="@drawable/web_hi_res_512"/>
+        android:src="@drawable/web_hi_res_512"
+        android:contentDescription="@string/icon"/>
 
     <TextView
         android:id="@+id/activity_credits_version"
