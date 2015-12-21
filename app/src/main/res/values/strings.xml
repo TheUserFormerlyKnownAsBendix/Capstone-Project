@@ -59,4 +59,6 @@
     <string name="profile_cover">Profile Cover Image</string>
     <string name="profile_photo">Profile Photo</string>
     <string name="text_format">Text format</string>
+    <string name="location_disabled">Location is disabled!</string>
+    <string name="grant_permissions">Please grant all permissions!</string>
 </resources>

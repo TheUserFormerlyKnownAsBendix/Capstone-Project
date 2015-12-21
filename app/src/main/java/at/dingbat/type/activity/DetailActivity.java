@@ -18,6 +18,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -108,6 +109,9 @@ public class DetailActivity extends AppCompatActivity implements GoogleApiClient
                         ApiUtil.addLocation(googleClient, file, l);
                         LatLng latlng = new LatLng(l.getLatitude(), l.getLongitude());
                         setLocation(latlng);
+                    } else {
+                        Toast.makeText(DetailActivity.this, R.string.location_disabled, Toast.LENGTH_SHORT).show();
+                        save_location.setChecked(false);
                     }
                 } else {
                     ApiUtil.removeLocation(googleClient, file);

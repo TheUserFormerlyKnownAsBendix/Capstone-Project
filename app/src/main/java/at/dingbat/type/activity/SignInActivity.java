@@ -1,10 +1,15 @@
 package at.dingbat.type.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -20,6 +25,7 @@ import at.dingbat.type.R;
 public class SignInActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 9001;
+    private static final int PERMISSION_REQUEST = 1;
 
     private GoogleSignInOptions gso;
     private GoogleApiClient googleClient;
@@ -48,8 +54,13 @@ public class SignInActivity extends AppCompatActivity {
                     GoogleSignInAccount account = result.getSignInAccount();
 
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(i);
-                } else Log.e(SignInActivity.class.getCanonicalName(), getString(R.string.login_failed));
+                    finish();
+                } else {
+                    Log.e(SignInActivity.class.getCanonicalName(), getString(R.string.login_failed));
+                    Toast.makeText(SignInActivity.this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show();
+                }
             }
         };
 
@@ -60,8 +71,15 @@ public class SignInActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleClient);
-                startActivityForResult(signInIntent, RC_SIGN_IN);
+                boolean isLocationEnabled = ContextCompat.checkSelfPermission(SignInActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+                boolean isAccountEnabled = ContextCompat.checkSelfPermission(SignInActivity.this, Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED;
+
+                if(isLocationEnabled && isAccountEnabled) {
+                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleClient);
+                    startActivityForResult(signInIntent, RC_SIGN_IN);
+                } else {
+                    ActivityCompat.requestPermissions(SignInActivity.this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.GET_ACCOUNTS }, PERMISSION_REQUEST);
+                }
             }
         });
 
@@ -74,6 +92,20 @@ public class SignInActivity extends AppCompatActivity {
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             loginCallback.onLoggedIn(result);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST:
+                if(grantResults.length < 2) {
+                    Toast.makeText(SignInActivity.this, R.string.grant_permissions, Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleClient);
+                    startActivityForResult(signInIntent, RC_SIGN_IN);
+                }
+                return;
         }
     }
 

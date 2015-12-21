@@ -105,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Section results;
 
     private boolean save_location = true;
+    private boolean creating_file = false;
+    private boolean creating_folder = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,13 +124,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onReceive(Context context, Intent intent) {
                 if (intent.hasExtra("action")) {
                     String action = intent.getStringExtra("action");
-                    if (action.equals("createfile")) {
+                    if (action.equals("createfile") && !creating_file) {
+                        creating_file = true;
                         Location l = null;
                         if (save_location)
                             l = LocationServices.FusedLocationApi.getLastLocation(googleClient);
                         ApiUtil.createFile(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getFolder(googleClient, DriveId.decodeFromString(intent.getStringExtra("folder"))), l, new ApiUtil.FileCreatedCallback() {
                             @Override
                             public void onFileCreated(DriveFile file) {
+                                creating_file = false;
                                 if (file != null) {
                                     Intent i = new Intent(MainActivity.this, EditorActivity.class);
                                     i.putExtra("file", file.getDriveId().toString());
@@ -136,10 +140,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 }
                             }
                         });
-                    } else if (action.equals("createfolder")) {
+                    } else if (action.equals("createfolder") && !creating_folder) {
+                        creating_folder = true;
                         ApiUtil.createFolder(googleClient, intent.getStringExtra("title"), Drive.DriveApi.getFolder(googleClient, DriveId.decodeFromString(intent.getStringExtra("folder"))), new ApiUtil.FolderCreatedCallback() {
                             @Override
                             public void onFolderCreated(DriveFolder folder) {
+                                creating_folder = false;
                                 if (folder != null) reload();
                             }
                         });
@@ -523,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onBackPressed() {
         if(isSearchEnabled) toggleSearch();
-        else super.onBackPressed();
+        else finish();
     }
 
     @Override

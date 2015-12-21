@@ -18,11 +18,11 @@
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/activity_sign_in_button"
-        android:layout_below="@+id/activity_sign_in_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin"
-        android:layout_centerInParent="true">
+        android:layout_marginBottom="@dimen/margin"
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true">
     </com.google.android.gms.common.SignInButton>
 
 </RelativeLayout>
