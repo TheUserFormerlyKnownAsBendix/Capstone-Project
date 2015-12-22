@@ -12,8 +12,8 @@
         android:layout_width="@dimen/list_item_primary_control_size"
         android:layout_height="@dimen/list_item_primary_control_size"
         app:cardCornerRadius="@dimen/list_item_primary_control_radius"
-        android:layout_marginLeft="@dimen/margin"
-        android:layout_marginRight="@dimen/margin"
+        android:layout_marginStart="@dimen/margin"
+        android:layout_marginEnd="@dimen/margin"
         app:cardBackgroundColor="#BDBDBD"
         android:layout_gravity="center_vertical">
 

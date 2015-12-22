@@ -15,7 +15,7 @@
         android:layout_width="@android:dimen/app_icon_size"
         android:layout_height="@android:dimen/app_icon_size"
         android:layout_weight="0"
-        android:layout_marginRight="@dimen/margin"
+        android:layout_marginEnd="@dimen/margin"
         android:src="@mipmap/ic_launcher"
         android:background="@android:color/transparent"
         android:contentDescription="@string/icon"/>

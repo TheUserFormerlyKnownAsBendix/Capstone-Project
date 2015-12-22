@@ -17,7 +17,7 @@
             android:layout_height="@dimen/list_item_primary_control_size"
             app:cardCornerRadius="@dimen/list_item_primary_control_radius"
             app:cardBackgroundColor="?attr/colorPrimary"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:scaleX="0"
             android:scaleY="0"
@@ -44,11 +44,11 @@
             android:id="@+id/widget_text_block_item_edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/margin"
-            android:layout_marginRight="@dimen/margin"
+            android:layout_marginStart="@dimen/margin"
+            android:layout_marginEnd="@dimen/margin"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:background="@android:color/transparent"/>
 
@@ -56,11 +56,11 @@
             android:id="@+id/widget_text_block_item_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/margin"
-            android:layout_marginRight="@dimen/margin"
+            android:layout_marginStart="@dimen/margin"
+            android:layout_marginEnd="@dimen/margin"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true" />
 
     </RelativeLayout>
